@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import Loader from "./Components/Loader"
 import ResultComponent from "./Components/ResultComponent";
-import { fetchSearchResults, fetchAutocompleteResults } from "../../redux/searchSlice";
+
 
 function NewApp() {
 
