@@ -1,5 +1,5 @@
 import React from "react";
-import "./loader.css"; // We'll extract the keyframes here
+import "./Loader.css"; // We'll extract the keyframes here
 
 const Loader = () => {
   return (
