@@ -27,6 +27,14 @@ app.post("/search", (req,res) => {
   const searchResult = searchRequest(keyword, searchType);
   const DisplayItemsResult = CompoundResultsDisplay(keyword, searchType);
 
+  if (searchType === "category" && !searchResult) {
+  return res.status(500).json({
+    success: false,
+    message: "No matching category found"
+  });
+}
+
+
   res.json({
     success: true,
     file: searchType === "compound" ? `http://localhost:5000/filtered/${path.basename(searchResult)}` : null,

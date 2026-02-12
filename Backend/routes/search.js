@@ -8,23 +8,23 @@ const path =require('path');
 const searchRequest = (keyword, searchType) => {
   let CompoundSearchResults = [];
   let CategorySearchResults = {};
-    if(searchType === "category") {
-            const DATA_DIR = path.join(__dirname,"../data");
-            const file = fs.readdirSync(DATA_DIR).filter(file => file ==="ExploSpreadsheet.xlsx");
-            if(file.length === 0) return null;
-            const filterCategory = (fileName) => {
-            const filePath = path.join(DATA_DIR, fileName);
-            // const data = readExcel(filePath);
-            const data = TextToJSON(filePath);
-            const results = filterByCategory(data, keyword);
-            return results;
-            }
-            CategorySearchResults = filterCategory(file[0]);
-            if(CategorySearchResults && Object.keys(CategorySearchResults).length > 0) {
-              return CategorySearchResults;
-            }
-            return null;
-    }
+if (searchType === "category") {
+  const DATA_DIR = path.join(__dirname, "../data");
+  const fileName = "ExploSpreadsheet.txt";
+  const filePath = path.join(DATA_DIR, fileName);
+
+  if (!fs.existsSync(filePath)) return null;
+
+  const data = TextToJSON(filePath);
+  CategorySearchResults = filterByCategory(data, keyword);
+
+  if (CategorySearchResults && Object.keys(CategorySearchResults).length > 0) {
+    return CategorySearchResults;
+  }
+  return null;
+}
+
+
     else if(searchType === "compound"){
       const DATA_DIR = path.join(__dirname, "../data/Sample files");
       const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith(".txt"));

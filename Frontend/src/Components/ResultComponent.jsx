@@ -199,7 +199,12 @@ function ResultComponent() {
         </button>
       </form>
 
-      {error && <p className="text-red-500 mt-4">{error}</p>}
+      {error && (
+  <p className="text-red-500 mt-4">
+    {typeof error === "string" ? error : error.message}
+  </p>
+)}
+
 
       {fileNames.length > 0 && (
         <div className="overflow-x-auto mt-6 w-full max-w-6xl bg-white p-4 rounded-lg shadow-md">

@@ -14,6 +14,7 @@ const filterByCategory = (data, keyword) => {
   return CategorySearchResults;
 };
 
+
 // Example: compound name search
 const filterByCompoundName = (data, keyword) => {
   const filteredData = data.filter(row => {
