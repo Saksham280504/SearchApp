@@ -262,8 +262,8 @@ function CompoundSearch() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={savedSearch.graphData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" angle={-45} textAnchor="end" interval={0} height={80} />
-                    <YAxis />
+                    <XAxis label={{ value: "Files ", position: "insideBottom", offset: -10 }} dataKey="name" angle={-45} textAnchor="end" interval={0} height={80} />
+                    <YAxis label={{ value: "Area", angle: -90, position: "insideLeft", offset: 10 }} />
                     <Tooltip />
                     <Bar dataKey="area" fill="#82ca9d" />
                   </BarChart>

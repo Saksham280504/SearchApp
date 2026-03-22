@@ -12,6 +12,8 @@ app.use(express.json());
 // const { readExcel } = require("./utils/excelFileReader");
 const { TextToJSON } = require("./utils/TextToJson");
 
+const { getSampleFileList, getAnalyticsData } = require("./routes/analytics");
+
 const OUTPUT_DIR = path.join(__dirname, "filtered");
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR);
 
@@ -71,6 +73,32 @@ app.get("/autocomplete", (req,res) => {
 
    res.json({ suggestions: Array.from(suggestions).slice(0, 10)}); // return only the first 10 suggestions
 });
+
+// Returns the list of available sample file names
+app.get("/analytics/files", (req, res) => {
+  try {
+    const files = getSampleFileList();
+    res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to list sample files" });
+  }
+});
+
+// Accepts a JSON body: { files: ["SBW1_ALL_COMP...", "SD1_ALL_Compou..."] }
+// Returns all compound data for those files, keyed by file name
+app.post("/analytics/data", (req, res) => {
+  const { files } = req.body;
+  if (!files || !Array.isArray(files) || files.length === 0) {
+    return res.status(400).json({ error: "Provide an array of file names in 'files'" });
+  }
+  try {
+    const data = getAnalyticsData(files);
+    res.json({ data });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load analytics data" });
+  }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
