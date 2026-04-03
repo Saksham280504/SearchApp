@@ -117,17 +117,18 @@ export default function Footer() {
           <div style={COL_TITLE}>Contact</div>
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", lineHeight: 1.75 }}>
             <div style={{ marginBottom: "10px" }}>
-              📍 Central Research Institute<br />
-              New Delhi – 110 003
+              📍 SLCR lab - IIT (BHU) Varanasi,<br />
+              Uttar Pradesh, India - 221005
             </div>
             <div style={{ marginBottom: "10px" }}>
-              📞 +91-11-2436-0721
+              📞 +91 8905082820
             </div>
             <div style={{ marginBottom: "10px" }}>
-              ✉️ searchapp@moef.gov.in
+              ✉️ slcr@iitbhu.ac.in
             </div>
             <div>
-              🕐 Mon – Fri, 9 AM – 5:30 PM IST
+              🕐 Monday – Friday : 9:00 AM – 5:30 PM IST <br />
+              Saturday : 10:00 AM - 2:00 PM
             </div>
           </div>
         </div>
