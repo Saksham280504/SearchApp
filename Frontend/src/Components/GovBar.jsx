@@ -84,19 +84,6 @@ export default function GovBar() {
           <div style={{ width: "32px", height: "3px", background: "#138808", borderRadius: "1px" }} />
         </div>
       </div>
-
-      <div style={LINKS_STYLE}>
-        <a href="#" style={{ color: "#003087" }}>Skip to main content</a>
-        <span style={DIVIDER} />
-        <a href="#" style={{ color: "#003087" }}>Screen Reader Access</a>
-        <span style={DIVIDER} />
-        <span style={{ color: "#555" }}>A  A+  A-</span>
-        <span style={DIVIDER} />
-        <span style={{ display: "flex", gap: "6px" }}>
-          <span style={{ padding: "1px 6px", border: "1px solid #003087", color: "#003087", borderRadius: "3px", cursor: "pointer" }}>EN</span>
-          <span style={{ padding: "1px 6px", border: "1px solid #bbb", color: "#555", borderRadius: "3px", cursor: "pointer" }}>हि</span>
-        </span>
-      </div>
     </div>
   );
 }

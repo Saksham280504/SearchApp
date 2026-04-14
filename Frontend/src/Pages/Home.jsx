@@ -194,7 +194,7 @@ export default function Home() {
             }}
           >
             <span style={{ color: "#C8972A", fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 600 }}>
-              Ministry of Environment, Forest &amp; Climate Change
+              Smart Laboratory On Clean Rivers
             </span>
           </div>
 
@@ -227,7 +227,7 @@ export default function Home() {
             }}
           >
             Real-time search, sorting and visualisation of mass-spectrometry data
-            across environmental sample files — powered by compound and category-based
+            across sample files — powered by compound and category-based
             indexing with interactive analytics.
           </p>
 
@@ -381,7 +381,7 @@ export default function Home() {
             <p style={{ color: "rgba(255,255,255,0.72)", fontSize: "15px", lineHeight: 1.85, marginBottom: "28px" }}>
               This portal enables researchers and environmental scientists to search, sort, and
               visualise mass-spectrometry compound data across multiple sample files in real time.
-              Built under the Ministry of Environment, Forest and Climate Change, it supports
+              Built under the Smart Laboratory on Clean Rivers, it supports
               evidence-based environmental decision making.
             </p>
             <button
