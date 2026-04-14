@@ -2,59 +2,63 @@ import { useState } from "react";
 import CompoundSearch from "../Components/CompoundSearch";
 import CategorySearch from "../Components/CategorySearch";
 
-function QueryPage() {
+export default function QueryPage() {
   const [activeTab, setActiveTab] = useState("compound");
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold text-gray-800 mt-6 mb-2">Search</h1>
-      <p className="text-gray-500 mb-6 text-sm">
-        Choose a search mode below to get started.
-      </p>
-
-      {/* Tab Switcher */}
-      <div className="flex bg-white rounded-xl shadow-md p-1 mb-8 gap-1">
-        <button
-          onClick={() => setActiveTab("compound")}
-          className={`px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
-            activeTab === "compound"
-              ? "bg-blue-500 text-white shadow"
-              : "text-gray-500 hover:text-gray-800"
-          }`}
+    <main
+      className="page-shell min-h-screen px-4 py-8"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(243,248,252,0.95), rgba(237,244,249,0.95))",
+      }}
+    >
+      <div className="page-content mx-auto max-w-[1400px]">
+        <div
+          className="page-animate chem-panel mb-6 rounded-[30px] border border-slate-200 px-8 py-8 shadow-[0_20px_50px_rgba(16,56,94,0.08)]"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(247,251,253,0.92))",
+          }}
         >
-          🔬 Compound Search
-        </button>
-        <button
-          onClick={() => setActiveTab("category")}
-          className={`px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
-            activeTab === "category"
-              ? "bg-green-500 text-white shadow"
-              : "text-gray-500 hover:text-gray-800"
-          }`}
-        >
-          🗂️ Category Search
-        </button>
-      </div>
+          <div className="chem-orb absolute left-10 top-8 h-12 w-12" />
+          <div className="chem-orb orb-2 absolute right-16 top-10 h-5 w-5" />
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0a6a8b]">
+            Search Workspace
+          </p>
+          <h1 className="mt-3 text-5xl font-bold text-slate-800">Query Tool</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+            Choose a mode, set your filters on the left, and review results on the right.
+          </p>
+        </div>
 
-      {/* Tab Description Badge */}
-      <div className="mb-6">
-        {activeTab === "compound" ? (
-          <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
-            Search by compound name → view files, properties &amp; bar graphs
-          </span>
-        ) : (
-          <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-            Search by category → browse all matching compounds
-          </span>
-        )}
-      </div>
+        <div className="page-animate page-animate-delay-1 mb-6 flex w-fit gap-2 rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-sm backdrop-blur">
+          <button
+            onClick={() => setActiveTab("compound")}
+            className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${
+              activeTab === "compound"
+                ? "bg-[#10385e] text-white"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Compound Search
+          </button>
+          <button
+            onClick={() => setActiveTab("category")}
+            className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${
+              activeTab === "category"
+                ? "bg-[#0f766e] text-white"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Category Search
+          </button>
+        </div>
 
-      {/* Tab Content */}
-      <div className="w-full">
-        {activeTab === "compound" ? <CompoundSearch /> : <CategorySearch />}
+        <div className="page-animate page-animate-delay-2">
+          {activeTab === "compound" ? <CompoundSearch /> : <CategorySearch />}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
-
-export default QueryPage;

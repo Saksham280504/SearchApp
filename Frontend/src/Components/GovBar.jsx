@@ -1,88 +1,96 @@
-// src/components/GovBar.jsx
-
-const GOV_BAR_STYLE = {
-  background: "#f5f5f5",
-  borderBottom: "1px solid #d0d0d0",
-  padding: "5px 24px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "12px",
-  fontSize: "12px",
-  color: "#333",
-  fontFamily: "'DM Sans', sans-serif",
-  minHeight: "40px",
-};
-
-const LEFT_STYLE = {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-};
-
-const EMBLEM_STYLE = {
-  width: "28px",
-  height: "28px",
-  objectFit: "contain",
-};
-
-const DIVIDER = {
-  width: "1px",
-  height: "20px",
-  background: "#bbb",
-  margin: "0 4px",
-};
-
-const LINKS_STYLE = {
-  display: "flex",
-  alignItems: "center",
-  gap: "16px",
-  fontSize: "11px",
-  color: "#003087",
-};
+const LINKS = [
+  {
+    labelHi: "भारत सरकार",
+    labelEn: "Government of India",
+    href: "https://www.india.gov.in/",
+  },
+  {
+    labelHi: "जल शक्ति मंत्रालय",
+    labelEn: "Ministry of Jal Shakti",
+    href: "https://www.jalshakti-dowr.gov.in/",
+  },
+  {
+    labelHi: "राष्ट्रीय स्वच्छ गंगा मिशन",
+    labelEn: "National Mission for Clean Ganga",
+    href: "https://nmcg.nic.in/",
+  },
+  {
+    labelHi: "",
+    labelEn: "Smart Laboratory on Clean Rivers",
+    href: "https://www.slcrvaranasi.com/",
+  },
+];
 
 export default function GovBar() {
   return (
-    <div style={GOV_BAR_STYLE}>
-      <div style={LEFT_STYLE}>
-        {/* India Emblem SVG placeholder (Ashoka Chakra colours) */}
-        <svg width="28" height="28" viewBox="0 0 28 28" style={EMBLEM_STYLE}>
-          <circle cx="14" cy="14" r="13" fill="#003087" stroke="#C8972A" strokeWidth="1.5"/>
-          <circle cx="14" cy="14" r="6" fill="none" stroke="#C8972A" strokeWidth="1.2"/>
-          {[...Array(24)].map((_, i) => {
-            const angle = (i * 15 * Math.PI) / 180;
-            return (
-              <line
-                key={i}
-                x1={14 + 6 * Math.cos(angle)}
-                y1={14 + 6 * Math.sin(angle)}
-                x2={14 + 5 * Math.cos(angle)}
-                y2={14 + 5 * Math.sin(angle)}
-                stroke="#C8972A"
-                strokeWidth="1"
+    <div
+      style={{
+        background: "#10385e",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        padding: "0 18px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1400px",
+          margin: "0 auto",
+          minHeight: "48px",
+          display: "flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "14px",
+          color: "#fff",
+        }}
+      >
+        {LINKS.map((item, index) => (
+          <div
+            key={item.labelEn}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              flexWrap: "wrap",
+            }}
+          >
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: "#fff",
+                textDecoration: "none",
+                display: "flex",
+                flexDirection: "column",
+                lineHeight: 1.05,
+              }}
+            >
+              {item.labelHi ? (
+                <span style={{ fontSize: "15px", fontWeight: 500 }}>
+                  {item.labelHi}
+                </span>
+              ) : null}
+              <span
+                style={{
+                  fontSize: item.labelHi ? "11px" : "15px",
+                  fontWeight: item.labelHi ? 400 : 500,
+                  opacity: 0.96,
+                }}
+              >
+                {item.labelEn}
+              </span>
+            </a>
+
+            {index !== LINKS.length - 1 && (
+              <span
+                style={{
+                  width: "1px",
+                  height: "22px",
+                  background: "rgba(255,255,255,0.35)",
+                }}
               />
-            );
-          })}
-          <circle cx="14" cy="14" r="1.5" fill="#C8972A"/>
-        </svg>
-
-        <div>
-          <div style={{ fontWeight: 700, fontSize: "12px", color: "#003087", letterSpacing: "0.3px" }}>
-            Government of India
+            )}
           </div>
-          <div style={{ fontSize: "10px", color: "#555", letterSpacing: "0.2px" }}>
-            Ministry of Environment, Forest and Climate Change
-          </div>
-        </div>
-
-        <div style={DIVIDER} />
-
-        {/* Tricolour accent strip */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <div style={{ width: "32px", height: "3px", background: "#FF6B00", borderRadius: "1px" }} />
-          <div style={{ width: "32px", height: "3px", background: "#fff", border: "0.5px solid #ccc", borderRadius: "1px" }} />
-          <div style={{ width: "32px", height: "3px", background: "#138808", borderRadius: "1px" }} />
-        </div>
+        ))}
       </div>
     </div>
   );

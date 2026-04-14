@@ -32,3 +32,195 @@ h1, h2, h3 {
 }
 
 a { text-decoration: none; color: inherit; }
+
+#root {
+  min-height: 100vh;
+}
+
+.page-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.page-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(16, 56, 94, 0.16), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(10, 106, 139, 0.1), transparent 24%);
+  pointer-events: none;
+}
+
+.page-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(16, 56, 94, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 56, 94, 0.045) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 92%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.page-content {
+  position: relative;
+  z-index: 1;
+}
+
+.page-animate {
+  opacity: 0;
+  transform: translateY(28px);
+  animation: pageReveal 0.8s ease forwards;
+}
+
+.page-animate-delay-1 { animation-delay: 0.08s; }
+.page-animate-delay-2 { animation-delay: 0.16s; }
+.page-animate-delay-3 { animation-delay: 0.24s; }
+.page-animate-delay-4 { animation-delay: 0.32s; }
+
+.chem-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.chem-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 249, 252, 0.9)),
+    radial-gradient(circle at top right, rgba(10, 106, 139, 0.12), transparent 35%);
+  pointer-events: none;
+}
+
+.chem-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -20% auto;
+  width: 240px;
+  height: 240px;
+  background:
+    radial-gradient(circle, rgba(16, 56, 94, 0.18) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(10, 106, 139, 0.14) 0 2px, transparent 3px);
+  background-size: 42px 42px, 84px 84px;
+  opacity: 0.55;
+  transform: rotate(16deg);
+  pointer-events: none;
+}
+
+.chem-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.chem-orb {
+  position: absolute;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(17, 90, 122, 0.3));
+  filter: blur(0.2px);
+  opacity: 0.5;
+  animation: floatOrb 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.chem-orb.orb-2 {
+  animation-delay: 1.8s;
+  animation-duration: 11s;
+}
+
+.chem-orb.orb-3 {
+  animation-delay: 3.2s;
+  animation-duration: 10s;
+}
+
+.navbar-aura {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.navbar-aura::before,
+.navbar-aura::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 56, 94, 0.13), transparent 62%);
+  filter: blur(8px);
+  animation: driftGlow 12s ease-in-out infinite;
+}
+
+.navbar-aura::before {
+  top: -240px;
+  left: 12%;
+}
+
+.navbar-aura::after {
+  right: 8%;
+  bottom: -270px;
+  animation-delay: 2.6s;
+}
+
+.navbar-chem-line {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(16, 56, 94, 0), rgba(16, 56, 94, 0.85), rgba(10, 106, 139, 0.9), rgba(16, 56, 94, 0));
+  background-size: 200% 100%;
+  animation: flowLine 7s linear infinite;
+  pointer-events: none;
+}
+
+.info-placeholder {
+  min-height: 520px;
+  border: 1px dashed rgba(146, 168, 189, 0.7);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  color: #8aa0bc;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(243, 248, 252, 0.88)),
+    radial-gradient(circle at top, rgba(16, 56, 94, 0.07), transparent 35%);
+}
+
+@keyframes pageReveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatOrb {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(14px, -18px, 0) scale(1.08);
+  }
+}
+
+@keyframes flowLine {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+
+@keyframes driftGlow {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(18px, 22px, 0) scale(1.08);
+  }
+}

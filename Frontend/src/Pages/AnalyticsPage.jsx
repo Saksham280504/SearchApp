@@ -1,4 +1,3 @@
-// src/pages/AnalyticsPage.jsx
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,16 +7,16 @@ import {
   clearAnalyticsData,
 } from "../../redux/analyticsSlice";
 import Heatmap from "../Components/Analytics/Heatmap";
-import Chromatogram from "../Components/analytics/Chromatogram";
-import MassSpectrum from "../Components/analytics/MassSpectrum";
+import Chromatogram from "../Components/Analytics/Chromatogram";
+import MassSpectrum from "../Components/Analytics/MassSpectrum";
 
 const TABS = [
-  { id: "heatmap",      label: "Heatmap",       subtitle: "Samples (X) × Compound Formulas (Y), colored by Area" },
-  { id: "chromatogram", label: "Chromatogram",  subtitle: "Area vs Retention Time — one line per sample file" },
-  { id: "massspectrum", label: "Mass Spectrum",  subtitle: "Area vs m/z — one scatter plot per sample file" },
+  { id: "heatmap", label: "Heatmap", subtitle: "Sample-to-compound intensity view" },
+  { id: "chromatogram", label: "Chromatogram", subtitle: "Retention profile across sample files" },
+  { id: "massSpectrum", label: "Mass Spectrum", subtitle: "m/z distribution across selected files" },
 ];
 
-function AnalyticsPage() {
+export default function AnalyticsPage() {
   const dispatch = useDispatch();
   const { availableFiles, selectedFiles, data, loading, error } = useSelector(
     (state) => state.analytics
@@ -38,111 +37,157 @@ function AnalyticsPage() {
   };
 
   const selectAll = () => dispatch(setSelectedFiles([...availableFiles]));
-  const clearAll  = () => {
+
+  const clearAll = () => {
     dispatch(setSelectedFiles([]));
     dispatch(clearAnalyticsData());
   };
 
   const handleGenerate = () => {
-    if (selectedFiles.length === 0) return alert("Select at least one sample file.");
+    if (selectedFiles.length === 0) {
+      alert("Select at least one sample file.");
+      return;
+    }
     dispatch(fetchAnalyticsData(selectedFiles));
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-3xl font-bold text-gray-800 mt-4 mb-1">Analytics</h1>
-      <p className="text-gray-500 text-sm mb-6">
-        Select sample files below, then generate visualizations.
-      </p>
-
-      {/* File Selector */}
-      <div className="bg-white rounded-xl shadow border border-gray-200 p-5 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700">
-            Sample Files
-            <span className="ml-2 text-xs text-gray-400">
-              ({selectedFiles.length} / {availableFiles.length} selected)
-            </span>
-          </h2>
-          <div className="flex gap-2">
-            <button onClick={selectAll} className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
-              Select All
-            </button>
-            <button onClick={clearAll} className="text-xs px-3 py-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
-              Clear
-            </button>
-          </div>
-        </div>
-
-        {availableFiles.length === 0 ? (
-          <p className="text-xs text-gray-400">Loading available files…</p>
-        ) : (
-          <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-            {availableFiles.map((fn) => {
-              const active = selectedFiles.includes(fn);
-              return (
-                <button
-                  key={fn}
-                  onClick={() => toggleFile(fn)}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                    active
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
-                  }`}
-                >
-                  {fn}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        <button
-          onClick={handleGenerate}
-          disabled={loading || selectedFiles.length === 0}
-          className="mt-4 w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2 rounded-lg transition-all text-sm"
+    <main
+      className="page-shell min-h-screen px-4 py-8"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(243,248,252,0.95), rgba(236,244,249,0.95))",
+      }}
+    >
+      <div className="page-content mx-auto max-w-[1400px]">
+        <div
+          className="page-animate chem-panel mb-6 rounded-[30px] border border-slate-200 px-8 py-8 shadow-[0_20px_50px_rgba(16,56,94,0.08)]"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(247,251,253,0.92))",
+          }}
         >
-          {loading ? "Loading data…" : "Generate Visualizations"}
-        </button>
-
-        {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
-      </div>
-
-      {/* Visualization Panel */}
-      {hasData && (
-        <div>
-          <div className="flex bg-white rounded-xl shadow border border-gray-200 p-1 mb-3 gap-1 w-fit flex-wrap">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  activeTab === tab.id
-                    ? "bg-blue-600 text-white shadow"
-                    : "text-gray-500 hover:text-gray-800"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mb-4">
-            {TABS.find((t) => t.id === activeTab)?.subtitle}
+          <div className="chem-orb absolute right-12 top-10 h-12 w-12" />
+          <div className="chem-orb orb-2 absolute left-14 top-8 h-5 w-5" />
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0a6a8b]">
+            Visualization Workspace
           </p>
-
-          {activeTab === "heatmap"      && <Heatmap      data={data} />}
-          {activeTab === "chromatogram" && <Chromatogram data={data} />}
-          {activeTab === "massspectrum" && <MassSpectrum data={data} />}
+          <h1 className="mt-3 text-5xl font-bold text-slate-800">Analytics Tool</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+            Configure inputs on the left and inspect visual outputs on the right.
+          </p>
         </div>
-      )}
 
-      {!hasData && !loading && (
-        <div className="bg-white rounded-xl border border-dashed border-gray-300 p-16 text-center text-gray-400 text-sm">
-          Select files above and click <strong>Generate Visualizations</strong> to begin.
+        <div className="page-animate page-animate-delay-1 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,30%)_minmax(0,70%)] lg:items-start">
+          <aside
+            className="chem-panel h-fit self-start rounded-[28px] border border-slate-200 p-6 shadow-[0_20px_50px_rgba(16,56,94,0.08)] lg:sticky lg:top-[128px]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,250,252,0.92))",
+            }}
+          >
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0a6a8b]">
+                Analytics Input
+              </p>
+              <h2 className="mt-2 text-3xl font-bold text-slate-800">Input Panel</h2>
+              <p className="mt-2 text-sm leading-7 text-slate-500">
+                Select sample files and generate visual analytics.
+              </p>
+            </div>
+
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium text-slate-700">
+                Sample Files ({selectedFiles.length}/{availableFiles.length})
+              </span>
+              <div className="flex gap-2">
+                <button onClick={selectAll} className="rounded-lg bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+                  Select All
+                </button>
+                <button onClick={clearAll} className="rounded-lg bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-[340px] overflow-y-auto rounded-2xl border border-slate-200 bg-white/85 p-3">
+              {availableFiles.length === 0 ? (
+                <p className="text-sm text-slate-400">Loading sample files...</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {availableFiles.map((fn) => {
+                    const active = selectedFiles.includes(fn);
+                    return (
+                      <button
+                        key={fn}
+                        onClick={() => toggleFile(fn)}
+                        className={`rounded-full border px-3 py-1.5 text-xs transition ${
+                          active
+                            ? "border-[#10385e] bg-[#10385e] text-white"
+                            : "border-slate-300 bg-white text-slate-600 hover:border-sky-500"
+                        }`}
+                      >
+                        {fn}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleGenerate}
+              disabled={loading || selectedFiles.length === 0}
+              className="mt-5 w-full rounded-xl bg-[#10385e] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0c2f4f] disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {loading ? "Generating..." : "Generate Visualizations"}
+            </button>
+
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          </aside>
+
+          <section
+            className="chem-panel rounded-[28px] border border-slate-200 p-6 shadow-[0_20px_50px_rgba(16,56,94,0.08)]"
+            style={{
+              minHeight: "620px",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,250,252,0.92))",
+            }}
+          >
+            {hasData ? (
+              <>
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                        activeTab === tab.id
+                          ? "bg-[#10385e] text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <p className="mb-5 text-sm text-slate-500">
+                  {TABS.find((t) => t.id === activeTab)?.subtitle}
+                </p>
+
+                {activeTab === "heatmap" && <Heatmap data={data} />}
+                {activeTab === "chromatogram" && <Chromatogram data={data} />}
+                {activeTab === "massSpectrum" && <MassSpectrum data={data} />}
+              </>
+            ) : (
+              <div className="info-placeholder">
+                Select files on the left and click Generate Visualizations.
+              </div>
+            )}
+          </section>
         </div>
-      )}
-    </div>
+      </div>
+    </main>
   );
 }
-
-export default AnalyticsPage;
