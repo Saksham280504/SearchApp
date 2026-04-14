@@ -1,13 +1,14 @@
 // redux/analyticsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_BASE_URL } from "./config";
 
 // Fetch the list of available sample files from the backend
 export const fetchSampleFiles = createAsyncThunk(
   "analytics/fetchSampleFiles",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get("http://localhost:5000/analytics/files");
+      const res = await axios.get(`${API_BASE_URL}/analytics/files`);
       return res.data.files; // string[]
     } catch (err) {
       return rejectWithValue("Failed to load sample file list");
@@ -20,7 +21,7 @@ export const fetchAnalyticsData = createAsyncThunk(
   "analytics/fetchData",
   async (selectedFiles, { rejectWithValue }) => {
     try {
-      const res = await axios.post("http://localhost:5000/analytics/data", {
+      const res = await axios.post(`${API_BASE_URL}/analytics/data`, {
         files: selectedFiles,
       });
       return res.data.data; // { [fileName]: CompoundRow[] }

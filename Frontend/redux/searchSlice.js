@@ -1,13 +1,13 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
+import { API_BASE_URL } from "./config";
 
 //Async thunk to handle API request
 export const fetchSearchResults = createAsyncThunk(
     "search/fetchResults",
     async ({ keyword, searchType }, { rejectWithValue }) => {
         try{
-            const response = await axios.post("http://localhost:5000/search", {
+            const response = await axios.post(`${API_BASE_URL}/search`, {
                 keyword,
                 searchType,
             });
@@ -22,7 +22,7 @@ export const fetchAutocompleteResults = createAsyncThunk(
     "search/fetchAutocomplete",
     async (query, { rejectWithValue }) => {
         try {
-            const response = await fetch(`http://localhost:5000/autocomplete?query=${query}`);
+            const response = await fetch(`${API_BASE_URL}/autocomplete?query=${query}`);
             const data = await response.json();
             return data.suggestions || [];
         } catch (error) {
