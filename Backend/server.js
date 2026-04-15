@@ -6,9 +6,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const ALLOWED_ORIGINS = [
-  "https://search-app-eight-blush.vercel.app",  // ← your Vercel URL
-  "https://search-app-frontend.onrender.com",   // ← prospective Render URL
+const ALLOWED_ORIGINS = [  // ← prospective Render URL
   process.env.FRONTEND_URL,                      // Allows setting via Render dashboard
   "http://localhost:5173",                        // Vite dev server
   "http://localhost:4173",                        // Vite preview

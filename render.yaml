@@ -9,7 +9,7 @@ services:
     region: oregon # Change to your preferred region (e.g., frankfurt, singapore)
     rootDir: Backend
     buildCommand: npm install
-    startCommand: node Server.js
+    startCommand: node server.js
     envVars:
       - key: PORT
         value: 5000
