@@ -14,23 +14,25 @@ export const fetchSearchResults = createAsyncThunk(
                 searchType,
             });
             return response.data;
-        } catch (error) {
-            return rejectWithValue(error.response.data);
+        } catch (err) {
+            return rejectWithValue(
+                err.response?.data?.message || "Search failed. Please try again."
+            );
         }
     }
 );
 
+// ── Autocomplete ────────────────────────────────────────────────────
 export const fetchAutocompleteResults = createAsyncThunk(
-    "search/fetchAutocomplete",
-    async (query, { rejectWithValue }) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/autocomplete?query=${query}`);
-            const data = await response.json();
-            return data.suggestions || [];
-        } catch (error) {
-            return rejectWithValue("Failed to fetch suggestions");
-        }
+  "search/fetchAutocomplete",
+  async (query, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/autocomplete`, { params: { query } });
+      return res.data.suggestions;
+    } catch (err) {
+      return rejectWithValue("Autocomplete failed");
     }
+  }
 );
 
 

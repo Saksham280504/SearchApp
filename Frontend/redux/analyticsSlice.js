@@ -10,7 +10,8 @@ export const fetchSampleFiles = createAsyncThunk(
   "analytics/fetchSampleFiles",
   async (_, { rejectWithValue }) => {
     try {
-const res = await axios.get(`${API_BASE_URL}/analytics/files`);      return res.data.files; // string[]
+const res = await axios.get(`${API_BASE_URL}/analytics/files`);      
+return res.data.files; // string[]
     } catch (err) {
       return rejectWithValue("Failed to load sample file list");
     }
@@ -22,7 +23,8 @@ export const fetchAnalyticsData = createAsyncThunk(
   "analytics/fetchData",
   async (selectedFiles, { rejectWithValue }) => {
     try {
- const res = await axios.post(`${API_BASE_URL}/analytics/data`, {        files: selectedFiles,
+ const res = await axios.post(`${API_BASE_URL}/analytics/data`, {        
+  files: selectedFiles,
       });
       return res.data.data; // { [fileName]: CompoundRow[] }
     } catch (err) {
