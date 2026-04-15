@@ -1,30 +1,33 @@
-// redux/analyticsSlice.js
+// src/redux/analyticsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { API_BASE_URL } from "./config";
 
-// Fetch the list of available sample files from the backend
+// ── Read the backend URL from the Vite environment variable.
+//    In development: set VITE_API_URL=http://localhost:5000 in Frontend/.env
+//    In production:  set VITE_API_URL=https://searchapp-backend-wowc.onrender.com
+//                   in your Vercel project → Settings → Environment Variables
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export const fetchSampleFiles = createAsyncThunk(
   "analytics/fetchSampleFiles",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/analytics/files`);
-      return res.data.files; // string[]
+      const res = await axios.get(`${API}/analytics/files`);
+      return res.data.files;
     } catch (err) {
       return rejectWithValue("Failed to load sample file list");
     }
   }
 );
 
-// Fetch compound data for a selected set of files
 export const fetchAnalyticsData = createAsyncThunk(
   "analytics/fetchData",
   async (selectedFiles, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/analytics/data`, {
+      const res = await axios.post(`${API}/analytics/data`, {
         files: selectedFiles,
       });
-      return res.data.data; // { [fileName]: CompoundRow[] }
+      return res.data.data;
     } catch (err) {
       return rejectWithValue("Failed to load analytics data");
     }
