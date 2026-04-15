@@ -28,7 +28,4 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: search-app-backend
-          type: web
-          property: url
+        sync: false
