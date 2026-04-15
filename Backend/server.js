@@ -1,132 +1,133 @@
+// Backend/server.js
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const cors = require('cors');
+const fs      = require('fs');
+const path    = require('path');
+const cors    = require('cors');
 
-const app = express();
-const PORT = process.env.port || 5000;
+const app  = express();
+// ── Use Render's injected PORT, fall back to 5000 locally ──────────
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());  
+// ── CORS: allow your Vercel frontend (and localhost for dev) ────────
+const ALLOWED_ORIGINS = [
+  "https://search-app-eight-blush.vercel.app",  // ← your Vercel URL
+  "http://localhost:5173",                        // Vite dev server
+  "http://localhost:4173",                        // Vite preview
+];
 
-// const { readExcel } = require("./utils/excelFileReader");
-const { TextToJSON } = require("./utils/TextToJson");
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, Render health checks)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
 
-const { getSampleFileList, getAnalyticsData } = require("./routes/analytics");
+// Handle preflight for all routes
+app.options("*", cors());
 
-const OUTPUT_DIR = path.join(__dirname, "filtered");
+app.use(express.json());
+
+// ── Utilities & routes ─────────────────────────────────────────────
+const { TextToJSON }            = require("./utils/TextToJson");
+const OUTPUT_DIR                = path.join(__dirname, "filtered");
+const { searchRequest }         = require("./routes/search");
+const { CompoundResultsDisplay } = require("./routes/display");
+const { listSampleFiles, getAnalyticsData } = require("./routes/analytics");
+
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR);
 
-const { searchRequest } = require("./routes/search");
-const { CompoundResultsDisplay } = require("./routes/display");
+// ── Health check (Render pings this to keep the instance warm) ─────
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "SearchApp Backend is running" });
+});
 
+// ── Search endpoint ────────────────────────────────────────────────
 app.post("/search", (req, res) => {
-  try {
-    const { keyword, searchType } = req.body;
+  const { keyword, searchType } = req.body;
+  if (!keyword || !searchType) {
+    return res.status(400).json({ error: "Missing search parameters" });
+  }
 
-    if (!keyword || !searchType) {
-      return res.status(400).json({ error: "Missing search parameters" });
-    }
+  const searchResult       = searchRequest(keyword, searchType);
+  const DisplayItemsResult = CompoundResultsDisplay(keyword, searchType);
 
-    const searchResult = searchRequest(keyword, searchType);
-    const displayItemsResult = CompoundResultsDisplay(keyword, searchType);
-
-    if (searchType === "category" && !searchResult) {
-      return res.status(404).json({
-        success: false,
-        message: "No matching category found",
-      });
-    }
-
-    if (searchType === "compound" && !searchResult) {
-      return res.status(404).json({
-        success: false,
-        message: "No matching compound found",
-      });
-    }
-
-    return res.json({
-      success: true,
-      file:
-        searchType === "compound"
-          ? `${req.protocol}://${req.get("host")}/filtered/${path.basename(searchResult)}`
-          : null,
-      Compound: searchType === "compound" ? keyword : null,
-      Count: searchType === "category" ? searchResult.Count : undefined,
-      CompoundNames: searchType === "category" ? searchResult.CompoundNames : undefined,
-      CompoundFormulas:
-        searchType === "category" ? searchResult.CompoundFormulas : undefined,
-      ...(displayItemsResult || {}),
-    });
-  } catch (error) {
-    console.error("Error in /search:", error);
+  if (searchType === "category" && !searchResult) {
     return res.status(500).json({
       success: false,
-      error: "Internal server error in /search",
-      details: error.message,
+      message: "No matching category found",
     });
   }
+
+  // ── Build the file download URL using the actual host, not localhost
+  let fileUrl = null;
+  if (searchType === "compound" && searchResult) {
+    const HOST = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    fileUrl = `${HOST}/filtered/${path.basename(searchResult)}`;
+  }
+
+  res.json({
+    success: true,
+    file: fileUrl,
+    Compound: searchType === "compound" ? keyword : null,
+    Count:          searchType === "category" ? searchResult.Count          : undefined,
+    CompoundNames:  searchType === "category" ? searchResult.CompoundNames  : undefined,
+    CompoundFormulas: searchType === "category" ? searchResult.CompoundFormulas : undefined,
+    ...DisplayItemsResult,
+  });
 });
 
+// Serve generated Excel files
 app.use("/filtered", express.static(OUTPUT_DIR));
 
+// ── Autocomplete endpoint ──────────────────────────────────────────
 app.get("/autocomplete", (req, res) => {
-  try {
-    const { query } = req.query;
-    if (!query) {
-      return res.status(400).json({ error: "Missing query parameter" });
-    }
+  const { query } = req.query;
+  if (!query) return res.status(400).json({ error: "Missing query parameter" });
 
-    const DATA_DIR = path.join(__dirname, "./data/Sample files");
-    const files = fs.readdirSync(DATA_DIR).filter((file) => file.endsWith(".txt"));
-    const suggestions = new Set();
+  const DATA_DIR = path.join(__dirname, "./data/Sample files");
+  const files    = fs.readdirSync(DATA_DIR).filter(f => f.endsWith(".txt"));
+  const suggestions = new Set();
 
-    files.forEach((file) => {
-      const filePath = path.join(DATA_DIR, file);
-      const data = TextToJSON(filePath);
-
-      data.forEach((row) => {
-        if (row.Name && row.Name.toLowerCase().includes(query.toLowerCase())) {
-          suggestions.add(row.Name);
-        }
-      });
+  files.forEach(file => {
+    const data = TextToJSON(path.join(DATA_DIR, file));
+    data.forEach(row => {
+      if (row.Name && row.Name.toLowerCase().includes(query.toLowerCase())) {
+        suggestions.add(row.Name);
+      }
     });
+  });
 
-    return res.json({ suggestions: Array.from(suggestions).slice(0, 10) });
-  } catch (error) {
-    console.error("Error in /autocomplete:", error);
-    return res.status(500).json({
-      error: "Internal server error in /autocomplete",
-      details: error.message,
-    });
-  }
+  res.json({ suggestions: Array.from(suggestions).slice(0, 10) });
 });
 
-// Returns the list of available sample file names
+// ── Analytics endpoints ────────────────────────────────────────────
 app.get("/analytics/files", (req, res) => {
   try {
-    const files = getSampleFileList();
-    res.json({ files });
+    res.json({ success: true, files: listSampleFiles() });
   } catch (err) {
-    res.status(500).json({ error: "Failed to list sample files" });
+    console.error(err);
+    res.status(500).json({ success: false, error: "Failed to list sample files" });
   }
 });
 
-// Accepts a JSON body: { files: ["SBW1_ALL_COMP...", "SD1_ALL_Compou..."] }
-// Returns all compound data for those files, keyed by file name
 app.post("/analytics/data", (req, res) => {
-  const { files } = req.body;
-  if (!files || !Array.isArray(files) || files.length === 0) {
-    return res.status(400).json({ error: "Provide an array of file names in 'files'" });
+  const { selectedFiles } = req.body;
+  if (!selectedFiles || !Array.isArray(selectedFiles) || selectedFiles.length === 0) {
+    return res.status(400).json({ success: false, error: "No files selected" });
   }
   try {
-    const data = getAnalyticsData(files);
-    res.json({ data });
+    res.json({ success: true, data: getAnalyticsData(selectedFiles) });
   } catch (err) {
-    res.status(500).json({ error: "Failed to load analytics data" });
+    console.error(err);
+    res.status(500).json({ success: false, error: "Failed to fetch analytics data" });
   }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`SearchApp backend running on port ${PORT}`);
 });
