@@ -3,7 +3,7 @@ const { TextToJSON } = require("../utils/TextToJson");
 const fs = require('fs');
 const path = require('path');
 
-const SAMPLE_DIR = path.join(__dirname, "../data/Sample files");
+const SAMPLE_DIR = path.join(__dirname, "../data/sample-files");
 
 /**
  * Returns list of all sample .txt file names (without extension)
@@ -22,8 +22,10 @@ const getAnalyticsData = (selectedFiles) => {
 
   selectedFiles.forEach(fileName => {
     const filePath = path.join(SAMPLE_DIR, `${fileName}.txt`);
-    if (!fs.existsSync(filePath)) return;
-
+    if (!fs.existsSync(filePath)) {
+      console.error("File not found:", filePath);
+      return;
+    }
     const rows = TextToJSON(filePath);
     result[fileName] = rows.map(row => ({
       name: row["Name"] || "",
