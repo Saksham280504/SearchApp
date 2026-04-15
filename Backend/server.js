@@ -6,7 +6,8 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const ALLOWED_ORIGINS = [  // ← prospective Render URL
+const ALLOWED_ORIGINS = [  
+  "https://search-app-frontend-iigq.onrender.com",   // Your live Render Frontend URL
   process.env.FRONTEND_URL,                      // Allows setting via Render dashboard
   "http://localhost:5173",                        // Vite dev server
   "http://localhost:4173",                        // Vite preview
