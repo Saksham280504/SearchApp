@@ -4,22 +4,44 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.port || 5000;
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+const ALLOWED_ORIGINS = [
+  "https://search-app-eight-blush.vercel.app",  // ← your Vercel URL
+  "http://localhost:5173",                        // Vite dev server
+  "http://localhost:4173",                        // Vite preview
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, Render health checks)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+app.options("*", cors());
+
 app.use(express.json());  
 
-// const { readExcel } = require("./utils/excelFileReader");
+// Utilities & Routes
 const { TextToJSON } = require("./utils/TextToJson");
-
-const { getSampleFileList, getAnalyticsData } = require("./routes/analytics");
-
 const OUTPUT_DIR = path.join(__dirname, "filtered");
-if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR);
-
 const { searchRequest } = require("./routes/search");
 const { CompoundResultsDisplay } = require("./routes/display");
+const { getSampleFileList, getAnalyticsData } = require("./routes/analytics");
 
+if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR);
+
+// ── Health check (Render pings this to keep the instance warm) ─────
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "SearchApp Backend is running" });
+});
+
+// Search EndPoint
 app.post("/search", (req,res) => {
   const {keyword, searchType } = req.body;
   if(!keyword || !searchType) {
@@ -36,10 +58,16 @@ app.post("/search", (req,res) => {
   });
 }
 
+// ── Build the file download URL using the actual host, not localhost
+  let fileUrl = null;
+  if (searchType === "compound" && searchResult) {
+    const HOST = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    fileUrl = `${HOST}/filtered/${path.basename(searchResult)}`;
+}
 
   res.json({
     success: true,
-    file: searchType === "compound" ? `http://localhost:5000/filtered/${path.basename(searchResult)}` : null,
+    file: fileUrl,
     Compound: searchType === "compound" ? keyword : null,
     Count: searchType === "category" ? searchResult.Count : undefined,
     CompoundNames: searchType === "category" ? searchResult.CompoundNames : undefined,
@@ -62,7 +90,6 @@ app.get("/autocomplete", (req,res) => {
   files.forEach(file => {
     const filePath = path.join(DATA_DIR, file);
     console.log("Reading:", filePath); // Debug log
-    // const data = ReadExcel(filePath); // No Need of this noww!!
     const data = TextToJSON(filePath); // This won't crash now
     data.forEach(row => {
       if (row.Name && row.Name.toLowerCase().includes(query.toLowerCase())) {
