@@ -23,7 +23,6 @@ services:
     name: search-app-frontend
     env: static
     plan: free
-    region: oregon
     rootDir: Frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
