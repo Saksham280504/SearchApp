@@ -61,7 +61,7 @@ const searchRequest = (keyword, searchType) => {
   }
 
   else if (searchType === "compound") {
-    const DATA_DIR = path.join(__dirname, "../data/Sample files");
+    const DATA_DIR = path.join(__dirname, "../data/sample-files");
     const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith(".txt"));
     files.forEach(file => {
       const filePath = path.join(DATA_DIR, file);

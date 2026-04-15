@@ -8,7 +8,7 @@ const path = require('path');
 const CompoundResultsDisplay = (keyword, searchType) => {
     if (searchType !== "compound") return null;
 
-    const DATA_DIR = path.join(__dirname, "../data/Sample files");
+    const DATA_DIR = path.join(__dirname, "../data/sample-files");
     const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith(".txt"));
 
     // Initialize all results as empty arrays for aggregation

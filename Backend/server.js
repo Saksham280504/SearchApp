@@ -54,7 +54,7 @@ app.get("/autocomplete", (req,res) => {
   const { query } = req.query;
   if(!query ) return res.status(400).json({error: "Missing query parameter"});
   
-  const DATA_DIR = path.join(__dirname, "./data/Sample files");
+  const DATA_DIR = path.join(__dirname, "./data/sample-files");
   // const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith(".xlsx"));
   const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith(".txt"));
   let suggestions = new Set(); // to avoid duplicates
