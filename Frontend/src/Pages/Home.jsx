@@ -73,7 +73,8 @@ function AnimatedStat({ value, label, suffix = "", started }) {
 }
 
 /* ─── Reveal wrapper ─────────────────────────────────────────────── */
-function Reveal({ children, delay = 0, direction = "up", threshold = 0.15 }) {
+// height:100% lets this act as a proper grid cell that stretches to fill
+function Reveal({ children, delay = 0, direction = "up", threshold = 0.15, fillHeight = false }) {
   const [ref, visible] = useInView(threshold);
   const transforms = {
     up:    "translateY(40px)",
@@ -88,6 +89,9 @@ function Reveal({ children, delay = 0, direction = "up", threshold = 0.15 }) {
         opacity: visible ? 1 : 0,
         transform: visible ? "none" : transforms[direction] || transforms.up,
         transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
+        display: fillHeight ? "flex" : "block",
+        flexDirection: fillHeight ? "column" : undefined,
+        height: fillHeight ? "100%" : undefined,
       }}
     >
       {children}
@@ -287,7 +291,7 @@ export default function Home() {
       </section>
 
       {/* ══ FEATURE CARDS ════════════════════════════════════════════ */}
-      <section style={{ padding: "clamp(40px, 6vw, 72px) clamp(16px, 4vw, 40px) clamp(48px, 7vw, 88px)", maxWidth: "1280px", margin: "0 auto" }}>
+      <section className="feature-section">
         <Reveal direction="up" delay={0}>
           <div style={{ textAlign: "center", marginBottom: "52px" }}>
             <div style={{
@@ -307,19 +311,13 @@ export default function Home() {
           </div>
         </Reveal>
 
-        <div style={{ display: "flex", gap: "26px", justifyContent: "center", flexWrap: "wrap" }}>
+        {/* CSS Grid: 3 columns on desktop, 2 on tablet, 1 on mobile */}
+        <div className="feature-cards-grid">
           {FEATURES.map(({ icon, label, desc, to, img, accent }, i) => (
-            <Reveal key={label} direction="up" delay={i * 120} threshold={0.1}>
+            <Reveal key={label} direction="up" delay={i * 120} threshold={0.1} fillHeight>
               <div
                 onClick={() => navigate(to)}
-                style={{
-                  width: "min(340px, 100%)", borderRadius: "16px", overflow: "hidden",
-                  background: "#fff",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-                  cursor: "pointer",
-                  transition: "transform 0.22s, box-shadow 0.22s",
-                  border: "1px solid #eee",
-                }}
+                className="feature-card"
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = "translateY(-7px)";
                   e.currentTarget.style.boxShadow = "0 14px 40px rgba(0,0,0,0.14)";
@@ -346,7 +344,7 @@ export default function Home() {
                     {icon}
                   </div>
                 </div>
-                <div style={{ padding: "20px 22px 24px" }}>
+                <div style={{ padding: "20px 22px 24px", flex: 1 }}>
                   <h3 style={{
                     fontFamily: "'EB Garamond', Georgia, serif",
                     fontSize: "20px", fontWeight: 700, color: accent, marginBottom: "8px",
@@ -401,7 +399,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ KEYFRAMES ════════════════════════════════════════════════ */}
+      {/* ══ KEYFRAMES + RESPONSIVE CARDS ════════════════════════════ */}
       <style>{`
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translateY(32px); }
@@ -411,6 +409,52 @@ export default function Home() {
           0%   { opacity: 0.4; transform: translateY(-50%) scale(1); }
           50%  { opacity: 0.8; transform: translateY(-50%) scale(1.06); }
           100% { opacity: 0.4; transform: translateY(-50%) scale(1); }
+        }
+
+        /* Feature section wrapper */
+        .feature-section {
+          padding: 72px 40px 88px;
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+
+        /* CSS Grid: auto-places cards correctly at every breakpoint */
+        .feature-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 26px;
+        }
+
+        /* Full-height card so equal-height columns look great */
+        .feature-card {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #fff;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+          cursor: pointer;
+          transition: transform 0.22s, box-shadow 0.22s;
+          border: 1px solid #eee;
+          height: 100%;
+        }
+
+        /* Tablet: 2 columns */
+        @media (max-width: 900px) {
+          .feature-cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        /* Mobile: 1 column */
+        @media (max-width: 580px) {
+          .feature-cards-grid {
+            grid-template-columns: 1fr;
+          }
+          .feature-section {
+            padding: 48px 20px 60px;
+          }
         }
       `}</style>
     </main>
