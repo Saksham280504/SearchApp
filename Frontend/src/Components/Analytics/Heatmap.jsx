@@ -1,5 +1,6 @@
 // src/components/analytics/Heatmap.jsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Heatmap: Samples (X-axis) vs Compound Formulas (Y-axis)
@@ -58,48 +59,85 @@ function Heatmap({ data }) {
   const CELL_W = 48;
   const CELL_H = 20;
   const LABEL_W = 200;
-  const HEADER_H = 130;
+
+  // Calculate HEADER_H dynamically based on the longest file name
+  // Each char ≈ 5.5px at font-size 10, rotated 45° → projected vertical height ≈ charCount * 5.5 * sin(45°) ≈ charCount * 3.9
+  const maxLabelLen = useMemo(
+    () => fileNames.reduce((m, fn) => Math.max(m, fn.length), 0),
+    [fileNames]
+  );
+  const HEADER_H = Math.max(90, Math.ceil(maxLabelLen * 3.9) + 20);
 
   if (fileNames.length === 0 || formulas.length === 0) {
     return <p className="text-gray-500 text-sm mt-4">No data to display.</p>;
   }
 
+  // Tooltip via portal — renders at document root so it's never clipped by
+  // overflow:auto containers and always uses real viewport coordinates (fixed).
+  const TooltipPortal = tooltip
+    ? createPortal(
+        <div
+          style={{
+            position: "fixed",
+            left: tooltip.x + 16,
+            top: tooltip.y - 10,
+            zIndex: 9999,
+            pointerEvents: "none",
+            // Smart flip: if too close to right edge, show on left
+            ...(typeof window !== "undefined" && tooltip.x > window.innerWidth - 220
+              ? { left: "auto", right: window.innerWidth - tooltip.x + 10 }
+              : {}),
+            // Smart flip: if too close to bottom, show above
+            ...(typeof window !== "undefined" && tooltip.y > window.innerHeight - 160
+              ? { top: "auto", bottom: window.innerHeight - tooltip.y + 10 }
+              : {}),
+          }}
+          className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl max-w-xs"
+        >
+          <div className="font-bold mb-1">{tooltip.name || "(no name)"}</div>
+          <div><span className="text-gray-300">Formula:</span> {tooltip.formula}</div>
+          <div><span className="text-gray-300">m/z:</span> {tooltip.mz}</div>
+          <div><span className="text-gray-300">RT:</span> {tooltip.rt} min</div>
+          <div><span className="text-gray-300">Area:</span> {tooltip.area?.toLocaleString()}</div>
+          <div><span className="text-gray-300">Sample:</span> {tooltip.file}</div>
+        </div>,
+        document.body
+      )
+    : null;
+
   return (
     <div className="relative overflow-auto border border-gray-200 rounded-lg bg-white shadow">
+      {TooltipPortal}
       <div style={{ position: "relative" }}>
-        {/* Tooltip */}
-        {tooltip && (
-          <div
-            className="fixed z-50 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl pointer-events-none max-w-xs"
-            style={{ left: tooltip.x + 14, top: tooltip.y - 10 }}
-          >
-            <div className="font-bold mb-1">{tooltip.name || "(no name)"}</div>
-            <div><span className="text-gray-300">Formula:</span> {tooltip.formula}</div>
-            <div><span className="text-gray-300">m/z:</span> {tooltip.mz}</div>
-            <div><span className="text-gray-300">RT:</span> {tooltip.rt} min</div>
-            <div><span className="text-gray-300">Area:</span> {tooltip.area?.toLocaleString()}</div>
-            <div><span className="text-gray-300">Sample:</span> {tooltip.file}</div>
-          </div>
-        )}
-
         <svg
           width={LABEL_W + fileNames.length * CELL_W}
           height={HEADER_H + formulas.length * CELL_H}
+          // Allow header text to overflow upward without clipping
+          style={{ overflow: "visible" }}
         >
-          {/* Column headers (file names) */}
+          {/* Clip path for the data area only — prevents cells from bleeding into labels */}
+          <defs>
+            <clipPath id="heatmap-cells">
+              <rect x={LABEL_W} y={HEADER_H} width={fileNames.length * CELL_W} height={formulas.length * CELL_H} />
+            </clipPath>
+          </defs>
+
+          {/* Column headers (file names) — rotated -45°, full names shown */}
           {fileNames.map((fn, ci) => {
             const cx = LABEL_W + ci * CELL_W + CELL_W / 2;
-            const cy = HEADER_H - 6;
+            const cy = HEADER_H - 8;
             return (
               <g key={fn} transform={`translate(${cx}, ${cy}) rotate(-45)`}>
                 <text
                   x={0}
                   y={0}
                   textAnchor="start"
-                  fontSize={9}
+                  dominantBaseline="middle"
+                  fontSize={10}
                   fill="#374151"
+                  fontFamily="system-ui, sans-serif"
                 >
-                  {fn.length > 20 ? fn.slice(0, 18) + "…" : fn}
+                  {fn}
                 </text>
               </g>
             );
@@ -115,6 +153,7 @@ function Heatmap({ data }) {
                 textAnchor="end"
                 fontSize={9}
                 fill="#374151"
+                fontFamily="system-ui, sans-serif"
               >
                 {formula.length > 22 ? formula.slice(0, 20) + "…" : formula}
               </text>
@@ -149,7 +188,9 @@ function Heatmap({ data }) {
                     }}
                     onMouseMove={(e) => {
                       if (!row) return;
-                      setTooltip(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : prev);
+                      setTooltip(prev =>
+                        prev ? { ...prev, x: e.clientX, y: e.clientY } : prev
+                      );
                     }}
                     onMouseLeave={() => setTooltip(null)}
                   />
