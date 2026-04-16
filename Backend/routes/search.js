@@ -15,12 +15,22 @@ const searchRequest = (keyword, searchType) => {
 
   if (searchType === "category") {
     const DATA_DIR = path.join(__dirname, "../data");
-    const fileName = "ExploSpreadsheet.txt";
-    const filePath = path.join(DATA_DIR, fileName);
+    const optimizedPath = path.join(DATA_DIR, "OptimizedCategoryData.json");
 
-    if (!fs.existsSync(filePath)) return null;
+    if (!fs.existsSync(optimizedPath)) {
+      const xlsxPath = path.join(DATA_DIR, "ExploSpreadsheet.xlsx");
+      if (!fs.existsSync(xlsxPath)) return null;
 
-    const data = TextToJSON(filePath);
+      const excelData = readExcel(xlsxPath);
+      const optimized = excelData.map(row => ({
+        Category: row["Category"] || "",
+        Name: row["Name"] || "",
+        Formula: row["Formula"] || ""
+      }));
+      fs.writeFileSync(optimizedPath, JSON.stringify(optimized));
+    }
+
+    const data = TextToJSON(optimizedPath);
 
     // ── Case-insensitive substring match on the Category field ──────────
     // This covers all spelling variants in the data (e.g. "Metabolite",
