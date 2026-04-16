@@ -26,7 +26,7 @@ const slcrPoints = [
 export default function AboutPage() {
   return (
     <main className="page-shell" style={{ minHeight: "100vh", background: "#f3f8fb" }}>
-      <div className="page-content" style={{ padding: "40px 20px 60px" }}>
+      <div className="page-content" style={{ padding: "clamp(24px, 4vw, 40px) clamp(16px, 3vw, 20px) clamp(36px, 5vw, 60px)" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           <section
             className="page-animate chem-panel"
@@ -39,6 +39,7 @@ export default function AboutPage() {
             }}
           >
             <div
+              className="about-hero-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
@@ -222,6 +223,7 @@ export default function AboutPage() {
           </section>
 
           <section
+            className="page-animate page-animate-delay-1 about-vision-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
@@ -279,6 +281,7 @@ export default function AboutPage() {
             }}
           >
             <div
+              className="about-slcr-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "minmax(0, 1fr) minmax(320px, 0.85fr)",

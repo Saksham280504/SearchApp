@@ -224,3 +224,86 @@ a { text-decoration: none; color: inherit; }
     transform: translate3d(18px, 22px, 0) scale(1.08);
   }
 }
+
+/* ─── Mobile Responsive ──────────────────────────────────────── */
+
+/* Viewport meta guard – ensure proper scaling */
+@media (max-width: 768px) {
+  /* Global padding reduction */
+  .page-content {
+    overflow-x: hidden;
+  }
+
+  /* Navbar mobile tweaks */
+  .navbar-mobile-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .navbar-logos-strip {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* About page two-column grids → single column */
+  .about-hero-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .about-vision-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .about-slcr-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Contact page grid → single column */
+  .contact-content-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Contact form name/email → single column */
+  .contact-name-email-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Footer grid → 2 columns then single */
+  .footer-main-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Info placeholder min-height reduction */
+  .info-placeholder {
+    min-height: 240px !important;
+  }
+
+  /* Home hero decorative rings – hide on mobile */
+  .hero-deco-ring {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Footer → fully single column on very small screens */
+  .footer-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Footer bottom bar stacks */
+  .footer-bottom-bar {
+    flex-direction: column !important;
+    text-align: center !important;
+    gap: 12px !important;
+  }
+
+  .footer-bottom-links {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+}

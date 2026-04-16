@@ -72,7 +72,7 @@ export default function AnalyticsPage() {
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#0a6a8b]">
             Visualization Workspace
           </p>
-          <h1 className="mt-3 text-5xl font-bold text-slate-800">Analytics Tool</h1>
+          <h1 className="mt-3 font-bold text-slate-800" style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}>Analytics Tool</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
             Configure inputs on the left and inspect visual outputs on the right.
           </p>

@@ -72,13 +72,16 @@ export default function Footer() {
         </div>
 
         {/* ── Main footer body ──────────────────────────────────── */}
-        <div style={{
-          maxWidth: "1280px", margin: "0 auto",
-          padding: "40px 40px 40px",
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr 1fr 1fr",
-          gap: "40px",
-        }}>
+        <div
+          className="footer-main-grid"
+          style={{
+            maxWidth: "1280px", margin: "0 auto",
+            padding: "40px clamp(16px, 4vw, 40px) 40px",
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr",
+            gap: "40px",
+          }}
+        >
 
           {/* Brand */}
           <div>
@@ -185,7 +188,7 @@ export default function Footer() {
         {/* ── Animated moving-bar data-viz accent ───────────────── */}
         <div style={{
           maxWidth: "1280px", margin: "0 auto",
-          padding: "0 40px 28px",
+          padding: "0 clamp(16px, 4vw, 40px) 28px",
         }}>
           <div style={{
             background: "rgba(255,255,255,0.04)",
@@ -231,19 +234,22 @@ export default function Footer() {
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
 
         {/* ── Bottom bar ────────────────────────────────────────── */}
-        <div style={{
-          maxWidth: "1280px", margin: "0 auto",
-          padding: "16px 40px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "10px",
-        }}>
+        <div
+          className="footer-bottom-bar"
+          style={{
+            maxWidth: "1280px", margin: "0 auto",
+            padding: "16px clamp(16px, 4vw, 40px)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "10px",
+          }}
+        >
           <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>
             © {new Date().getFullYear()} Government of India — Ministry of Environment, Forest and Climate Change. All rights reserved.
           </div>
-          <div style={{ display: "flex", gap: "20px" }}>
+          <div className="footer-bottom-links" style={{ display: "flex", gap: "20px" }}>
             {["Privacy Policy","Terms of Use","Disclaimer","Sitemap"].map(l => (
               <a key={l} href="#"
                 style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", textDecoration: "none", transition: "color 0.15s" }}

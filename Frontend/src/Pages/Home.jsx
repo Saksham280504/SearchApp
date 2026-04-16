@@ -157,15 +157,15 @@ export default function Home() {
           position: "absolute", inset: 0,
           background: "linear-gradient(110deg, rgba(0,48,135,0.88) 0%, rgba(0,31,92,0.60) 55%, transparent 100%)",
         }} />
-        {/* Decorative animated ring */}
-        <div style={{
+        {/* Decorative animated ring – hidden on mobile */}
+        <div className="hero-deco-ring" style={{
           position: "absolute", right: "8%", top: "50%", transform: "translateY(-50%)",
           width: "340px", height: "340px", borderRadius: "50%",
           border: "1.5px solid rgba(200,151,42,0.25)",
           animation: "pulse-ring 3s ease-in-out infinite",
           pointerEvents: "none",
         }} />
-        <div style={{
+        <div className="hero-deco-ring" style={{
           position: "absolute", right: "calc(8% + 40px)", top: "50%", transform: "translateY(-50%)",
           width: "260px", height: "260px", borderRadius: "50%",
           border: "1px solid rgba(200,151,42,0.15)",
@@ -177,7 +177,7 @@ export default function Home() {
           position: "relative",
           maxWidth: "1280px",
           margin: "0 auto",
-          padding: "90px 40px",
+          padding: "clamp(48px, 8vw, 90px) clamp(20px, 5vw, 40px)",
           width: "100%",
         }}>
           {/* Badge */}
@@ -273,7 +273,7 @@ export default function Home() {
       {/* ══ STATS STRIP (counting animation) ═════════════════════════ */}
       <section
         ref={statsRef}
-        style={{ background: "#003087", padding: "28px 40px" }}
+        style={{ background: "#003087", padding: "28px clamp(16px, 4vw, 40px)" }}
       >
         <div style={{
           maxWidth: "1280px", margin: "0 auto",
@@ -287,7 +287,7 @@ export default function Home() {
       </section>
 
       {/* ══ FEATURE CARDS ════════════════════════════════════════════ */}
-      <section style={{ padding: "72px 40px 88px", maxWidth: "1280px", margin: "0 auto" }}>
+      <section style={{ padding: "clamp(40px, 6vw, 72px) clamp(16px, 4vw, 40px) clamp(48px, 7vw, 88px)", maxWidth: "1280px", margin: "0 auto" }}>
         <Reveal direction="up" delay={0}>
           <div style={{ textAlign: "center", marginBottom: "52px" }}>
             <div style={{
@@ -313,7 +313,7 @@ export default function Home() {
               <div
                 onClick={() => navigate(to)}
                 style={{
-                  width: "340px", borderRadius: "16px", overflow: "hidden",
+                  width: "min(340px, 100%)", borderRadius: "16px", overflow: "hidden",
                   background: "#fff",
                   boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
                   cursor: "pointer",
@@ -368,7 +368,7 @@ export default function Home() {
       </section>
 
       {/* ══ ABOUT STRIP ══════════════════════════════════════════════ */}
-      <section style={{ background: "#003087", padding: "60px 40px" }}>
+      <section style={{ background: "#003087", padding: "clamp(36px, 5vw, 60px) clamp(20px, 5vw, 40px)" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto", textAlign: "center" }}>
           <Reveal direction="up" delay={0}>
             <h2 style={{

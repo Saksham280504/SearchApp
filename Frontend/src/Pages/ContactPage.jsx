@@ -46,7 +46,7 @@ export default function ContactPage() {
       {/* ── Page Hero ── */}
       <section style={{
         background: "linear-gradient(110deg, #003087 60%, #001f5c 100%)",
-        padding: "56px 40px 52px",
+        padding: "clamp(32px, 5vw, 56px) clamp(16px, 4vw, 40px) clamp(28px, 4vw, 52px)",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -89,13 +89,16 @@ export default function ContactPage() {
       </section>
 
       {/* ── Content ── */}
-      <section style={{ maxWidth: "1280px", margin: "0 auto", padding: "56px 40px 80px" }}>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1.4fr",
-          gap: "48px",
-          alignItems: "start",
-        }}>
+      <section style={{ maxWidth: "1280px", margin: "0 auto", padding: "clamp(32px, 5vw, 56px) clamp(16px, 4vw, 40px) clamp(48px, 7vw, 80px)" }}>
+        <div
+          className="contact-content-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.4fr",
+            gap: "48px",
+            alignItems: "start",
+          }}
+        >
 
           {/* Left — contact info */}
           <div>
@@ -196,7 +199,10 @@ export default function ContactPage() {
                 </h2>
 
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div
+                    className="contact-name-email-grid"
+                    style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}
+                  >
                     <div>
                       <label style={LABEL_STYLE}>Full Name *</label>
                       <input
