@@ -1,23 +1,26 @@
 // routes/search.js
 const { readExcel } = require("../utils/excelFileReader");
-const { TextToJSON } = require("../utils/TextToJson");
+const { TextToJSON, clearCache } = require("../utils/TextToJson");
 const { filterByCategory, filterByCompoundName } = require("../utils/searchLogic");
 const { CreateExcelFile } = require("../utils/CreateExcelFile");
 const fs = require('fs');
 const path = require('path');
 
 const searchRequest = (keyword, searchType) => {
+  // Clear cache at the beginning of each search to prevent Heap OOM
+  clearCache();
+
   let CompoundSearchResults = [];
   let CategorySearchResults = {};
 
   if (searchType === "category") {
     const DATA_DIR = path.join(__dirname, "../data");
-    const fileName = "ExploSpreadsheet.xlsx";
+    const fileName = "ExploSpreadsheet.txt";
     const filePath = path.join(DATA_DIR, fileName);
 
     if (!fs.existsSync(filePath)) return null;
 
-    const data = readExcel(filePath);
+    const data = TextToJSON(filePath);
 
     // ── Case-insensitive substring match on the Category field ──────────
     // This covers all spelling variants in the data (e.g. "Metabolite",

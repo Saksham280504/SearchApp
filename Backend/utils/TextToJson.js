@@ -25,4 +25,8 @@ const TextToJSON = (filePath) => {
   }
 };
 
-module.exports = { TextToJSON };
+const clearCache = () => {
+  fileCache.clear();
+};
+
+module.exports = { TextToJSON, clearCache };
