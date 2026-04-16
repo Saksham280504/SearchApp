@@ -122,7 +122,7 @@ function CompoundSearch() {
         </div>
 
         <form onSubmit={handleSearch} className="rounded-2xl bg-white/90 p-5 shadow-lg">
-          <div className="relative">
+          <div className="relative mb-4">
             <input
               type="text"
               placeholder="Enter compound name"
@@ -133,25 +133,28 @@ function CompoundSearch() {
               }}
               required
               autoComplete="off"
-              className="mb-4 w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-slate-700 outline-none transition focus:border-[#0a6a8b] focus:ring-2 focus:ring-[#0a6a8b]/20"
+              className="w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-slate-700 outline-none transition focus:border-[#0a6a8b] focus:ring-2 focus:ring-[#0a6a8b]/20"
             />
             {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute z-10 max-h-40 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-md">
-                {suggestions.map((suggestion, index) => (
-                  <li
-                    key={index}
-                    className="cursor-pointer p-3 text-sm text-slate-700 hover:bg-slate-100"
-                    onClick={() => {
-                      setKeyword(suggestion);
-                      setShowSuggestions(false);
-                    }}
-                  >
-                    {suggestion}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-2 w-full max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-md relative z-10">
+                <ul className="w-full">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="cursor-pointer p-3 text-sm text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        setKeyword(suggestion);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
+
           <button
             type="submit"
             className="w-full rounded-xl bg-gradient-to-r from-[#10385e] to-[#0a6a8b] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_24px_rgba(16,56,94,0.18)] transition hover:-translate-y-0.5"
@@ -274,6 +277,13 @@ function CompoundSearch() {
         {compound && downloadLink && (
           <div className="mt-6 space-y-4">
             <div className="flex flex-wrap gap-3">
+              <a
+                href={downloadLink}
+                download
+                className="rounded-xl bg-[#c8972a] px-4 py-3 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(200,151,42,0.3)] transition hover:-translate-y-0.5"
+              >
+                Download Filtered Results
+              </a>
               <button
                 className="rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
                 onClick={handleSaveCurrentSearch}
@@ -297,7 +307,7 @@ function CompoundSearch() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={currentGraphData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis
@@ -307,7 +317,10 @@ function CompoundSearch() {
                         interval={0}
                         height={80}
                       />
-                      <YAxis />
+                      <YAxis
+                        width={90}
+                        label={{ value: "Area", angle: -90, position: "insideLeft", offset: 0, dx: -20, fill: "#666" }}
+                      />
                       <Tooltip />
                       <Bar dataKey="area" fill="#0a6a8b" />
                     </BarChart>
@@ -342,7 +355,7 @@ function CompoundSearch() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={savedSearch.graphData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis
@@ -354,7 +367,8 @@ function CompoundSearch() {
                         height={80}
                       />
                       <YAxis
-                        label={{ value: "Area", angle: -90, position: "insideLeft", offset: 10 }}
+                        width={90}
+                        label={{ value: "Area", angle: -90, position: "insideLeft", offset: 0, dx: -20, fill: "#666" }}
                       />
                       <Tooltip />
                       <Bar dataKey="area" fill="#4a9f73" />

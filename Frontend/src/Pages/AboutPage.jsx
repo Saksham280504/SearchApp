@@ -258,7 +258,8 @@ export default function AboutPage() {
               }}
             >
               <p style={eyebrowStyle}>Mission</p>
-              <h2 style={headingStyle}>Make searching, comparison, and analysis genuinely usable</h2>
+              <h2 style={headingStyle}>Transform searching, comparison, and analysis into a seamless, powerful, and truly user-centric experience.
+</h2>
               <p style={bodyStyle}>
                 The mission is to support researchers, institutions, and decision-makers with an
                 interface that makes compound search, category discovery, and analytics easier to
