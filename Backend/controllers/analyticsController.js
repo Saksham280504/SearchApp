@@ -297,60 +297,50 @@ const getTrends = async (req, res) => {
 const { getCleanCategory } = require("../utils/categoryMapper");
 
 const getCategoryCounts = async (req, res) => {
-  let categoriesData = [];
+  const cleanSets = {};
 
   if (isDatabaseConfigured()) {
     try {
       const { rows } = await query(`
         SELECT
           category,
-          COUNT(DISTINCT id) AS count
+          normalized_name,
+          COALESCE(formula, '') AS formula
         FROM compounds
         WHERE category IS NOT NULL AND category != ''
-        GROUP BY category
       `);
-      categoriesData = rows;
+      rows.forEach((r) => {
+        const cleanCat = getCleanCategory(r.category);
+        if (!cleanCat) return;
+        if (!cleanSets[cleanCat]) cleanSets[cleanCat] = new Set();
+        cleanSets[cleanCat].add(`${r.normalized_name}||${r.formula}`);
+      });
     } catch (err) {
       console.error("getCategoryCounts DB error:", err.message);
     }
   }
 
-  // File-scan fallback if DB is not configured or fails
-  if (categoriesData.length === 0) {
+  // File-scan fallback if DB is not configured or returned no categories
+  if (Object.keys(cleanSets).length === 0) {
     try {
-      const fs = require("fs");
       const filePath = path.join(__dirname, "../data/OptimizedCategoryData.json");
       if (fs.existsSync(filePath)) {
         const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-        const countMap = {};
         data.forEach((row) => {
-          const cat = (row.Category || "").trim();
-          if (!cat) return;
-          const key = `${(row.Name || "").trim()}||${(row.Formula || "").trim()}`;
-          if (!countMap[cat]) countMap[cat] = new Set();
-          countMap[cat].add(key);
+          const cleanCat = getCleanCategory(row.Category);
+          if (!cleanCat) return;
+          const key = `${(row.Name || "").trim().toLowerCase()}||${(row.Formula || "").trim()}`;
+          if (!cleanSets[cleanCat]) cleanSets[cleanCat] = new Set();
+          cleanSets[cleanCat].add(key);
         });
-        categoriesData = Object.entries(countMap).map(([category, set]) => ({
-          category,
-          count: set.size,
-        }));
       }
     } catch (err) {
       console.error("getCategoryCounts file error:", err.message);
     }
   }
 
-  // Map and aggregate counts to clean categories
-  const cleanCountMap = {};
-  categoriesData.forEach(({ category, count }) => {
-    const cleanCat = getCleanCategory(category);
-    if (cleanCat) { // Ignore blanks/unmapped
-      cleanCountMap[cleanCat] = (cleanCountMap[cleanCat] || 0) + parseInt(count, 10);
-    }
-  });
-
-  const finalCategories = Object.entries(cleanCountMap)
-    .map(([category, count]) => ({ category, count }))
+  const finalCategories = Object.entries(cleanSets)
+    .map(([category, set]) => ({ category, count: set.size }))
     .sort((a, b) => a.category.localeCompare(b.category));
 
   return res.json({ categories: finalCategories });

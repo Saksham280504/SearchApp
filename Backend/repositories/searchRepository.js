@@ -1,4 +1,5 @@
 const { query, isDatabaseConfigured } = require("../db/pool");
+const { getVariations } = require("../utils/categoryMapper");
 
 const normalizeText = (value = "") => value.toString().trim().toLowerCase();
 
@@ -65,17 +66,19 @@ const searchCompound = async (keyword, limit = 500) => {
 };
 
 const searchCategory = async (keyword) => {
-  const normalized = normalizeText(keyword);
+  const variations = getVariations(keyword).map((v) => v.toLowerCase().trim());
+  const matchList = variations.length > 0 ? variations : [normalizeText(keyword)];
+
   const { rows } = await query(
     `
-      SELECT DISTINCT ON (c.normalized_name, c.formula)
+      SELECT DISTINCT ON (c.normalized_name, COALESCE(c.formula, ''))
         c.name,
         c.formula
       FROM compounds c
-      WHERE COALESCE(c.category, '') ILIKE '%' || $1 || '%'
-      ORDER BY c.normalized_name, c.formula, c.name
+      WHERE LOWER(TRIM(COALESCE(c.category, ''))) = ANY($1::text[])
+      ORDER BY c.normalized_name, COALESCE(c.formula, ''), c.name
     `,
-    [normalized]
+    [matchList]
   );
 
   if (rows.length === 0) return null;

@@ -62,7 +62,7 @@ const searchRequest = (keyword, searchType) => {
     matchedRows.forEach((row) => {
       const name = (row["Name"] || "").trim();
       const formula = (row["Formula"] || "").trim();
-      const key = `${name}||${formula}`;
+      const key = `${name.toLowerCase()}||${formula}`;
       if (!seen.has(key)) {
         seen.add(key);
         names.push(name);
