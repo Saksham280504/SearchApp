@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
+import '../redux/axiosConfig.js'  // ← sets up global JWT interceptor before anything else
 import App from './App.jsx'
 import { Provider } from 'react-redux'
 import store from '../redux/store.js'

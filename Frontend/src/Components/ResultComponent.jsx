@@ -22,22 +22,15 @@ function ResultComponent() {
   const dispatch = useDispatch();
 
   const {
-    fileNames,
+    results,        // ← unified array replacing parallel arrays
     downloadLink,
     error,
     suggestions,
-    mzValues,
-    retentionTimes,
-    molecularWeights,
-    ChemicalFormulas,
-    ms2Values,
-    ReferenceIons,
-    areas,
     Count,
     CompoundNames,
     CompoundFormulas,
     compound,
-    savedSearches, // <--- NEW: Access saved searches from Redux state
+    savedSearches,
   } = useSelector((state) => state.search);
 
   const [keyword, setKeyword] = useState("");
@@ -56,38 +49,26 @@ function ResultComponent() {
     e.preventDefault();
     if (!keyword) return alert("Enter a search keyword");
     setShowSuggestions(false);
-    dispatch(clearSearchResults()); // Clears current search results
+    dispatch(clearSearchResults());
     dispatch(fetchSearchResults({ keyword, searchType }));
-    setTopN(null); // Reset topN when a new search is performed
-    setShowBarGraph(false); // Hide current graph initially for new search
+    setTopN(null);
+    setShowBarGraph(false);
   };
 
   const loopsearch = (compoundName) => {
     setKeyword(compoundName);
     setSearchType("compound");
     setShowSuggestions(false);
-    dispatch(clearSearchResults()); // Clears current search results
-    dispatch(
-      fetchSearchResults({ keyword: compoundName, searchType: "compound" })
-    );
-    setTopN(null); // Reset topN
-    setShowBarGraph(false); // Hide current graph initially for new search
+    dispatch(clearSearchResults());
+    dispatch(fetchSearchResults({ keyword: compoundName, searchType: "compound" }));
+    setTopN(null);
+    setShowBarGraph(false);
   };
 
-  // Combine the arrays into an array of objects for sorting
-  const combinedResults = fileNames.map((file, index) => ({
-    fileName: file,
-    mzValue: mzValues[index],
-    retentionTime: retentionTimes[index],
-    molecularWeight: molecularWeights[index],
-    chemicalFormula: ChemicalFormulas[index],
-    ms2Value: ms2Values[index],
-    referenceIon: ReferenceIons[index],
-    area: areas[index],
-  }));
-
-  // Sort combinedResults by area in descending order
-  combinedResults.sort((a, b) => parseFloat(b.area) - parseFloat(a.area));
+  // Sort by area descending
+  const combinedResults = [...results].sort(
+    (a, b) => parseFloat(b.area) - parseFloat(a.area)
+  );
 
   const filteredResults =
     topN && combinedResults.length > topN
@@ -206,7 +187,7 @@ function ResultComponent() {
 )}
 
 
-      {fileNames.length > 0 && (
+      {results.length > 0 && (
         <div className="overflow-x-auto mt-6 w-full max-w-6xl bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-lg font-bold text-gray-800 mb-4">
             Matching Files and their properties:

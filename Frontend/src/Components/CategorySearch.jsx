@@ -1,51 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSearchResults, clearSearchResults } from "../../redux/searchSlice";
+import axios from "axios";
+import { API_BASE_URL } from "../../redux/config";
 
-const CATEGORIES = [
-  { label: "Agriculture", keyword: "Agriculture", count: 29 },
-  { label: "Antibiotic", keyword: "Antibiotic", count: 11 },
-  { label: "Carboxylic Acid", keyword: "Carboxylic acid", count: 1 },
-  { label: "Chemical Compound & Reagent", keyword: "Chemical compound", count: 49 },
-  { label: "Cosmetic Product", keyword: "Cosmetic", count: 2 },
-  { label: "Drugs", keyword: "Drug", count: 165 },
-  { label: "Dyes", keyword: "Dyes", count: 6 },
-  { label: "Environmental Pollutant", keyword: "Environmental pollutant", count: 3 },
-  { label: "Enzyme", keyword: "Enzyme", count: 1 },
-  { label: "Fat Soluble Antioxidant", keyword: "Fat soluble antioxidant", count: 1 },
-  { label: "Fatty Acid", keyword: "Fatty acid", count: 26 },
-  { label: "Fatty Alcohol", keyword: "Fatty alcohol", count: 1 },
-  { label: "Food Additive", keyword: "Food additive", count: 1 },
-  { label: "Food Industry", keyword: "Food industry", count: 6 },
-  { label: "Food Preservative", keyword: "Food preservative", count: 1 },
-  { label: "General Chemicals", keyword: "General chemicals", count: 5 },
-  { label: "Industrial", keyword: "Industrial", count: 4 },
-  { label: "Industrial Waste", keyword: "Industrial waste", count: 114 },
-  { label: "Medium-Chain Fatty Acid", keyword: "medium-chain fatty acid", count: 1 },
-  { label: "Metabolite", keyword: "Metabolite", count: 296 },
-  { label: "Natural Product", keyword: "Natural product", count: 11 },
-  { label: "Omega-Hydroxy Fatty Acid", keyword: "Omega-hydroxy fatty acid", count: 1 },
-  { label: "Organic Compound", keyword: "Organic compound", count: 25 },
-  { label: "PFAS", keyword: "PFAS", count: 1 },
-  { label: "Peptide / Amino Acid", keyword: "Peptide/Amino acid", count: 62 },
-  { label: "Personal Care Products / Drugs", keyword: "Personal care products/Drugs", count: 4 },
-  { label: "Personal Care Products / Toiletries", keyword: "Personal care products/toilteries", count: 24 },
-  { label: "Pharmaceutical", keyword: "Pharmaceutical", count: 15 },
-  { label: "Pharmaceutical / Herbicides / Dyes", keyword: "Pharmaceutical, Herbicides", count: 1 },
-  { label: "Plasticizer", keyword: "Plasticizer", count: 25 },
-  { label: "Plasticizer / Drugs", keyword: "Plasticizer/Drugs", count: 1 },
-  { label: "Polymer / Agriculture / Drugs", keyword: "Polymer/agriculture", count: 14 },
-  { label: "Polymer Industry", keyword: "Polymer industry", count: 1 },
-  { label: "Refrigerant", keyword: "Refriger", count: 5 },
-  { label: "Surfactant", keyword: "Surfactant", count: 1 },
-  { label: "Synthetic Organic Compound", keyword: "Synthetic Organic", count: 1 },
-  { label: "Tertiary Amino Compound", keyword: "Tertiary Amino", count: 1 },
+// Static list of recognized categories (matching the backend's clean names).
+// Counts are now fetched dynamically from the backend and are exactly grouped.
+const CATEGORIES_LIST = [
+  "Agriculture",
+  "Antibiotic",
+  "Carboxylic Acid",
+  "Chemicals & Reagents",
+  "Cosmetics",
+  "Drugs",
+  "Dyes",
+  "Environmental Pollutant",
+  "Enzyme",
+  "Fat Soluble Antioxidant",
+  "Fatty Acids & Alcohols",
+  "Food Industry",
+  "Industrial / Waste",
+  "Metabolite",
+  "Natural Product",
+  "Organic Compounds",
+  "Peptide / Amino Acid",
+  "Personal Care & Toiletries",
+  "PFAS",
+  "Pharmaceuticals",
+  "Plasticizer",
+  "Polymer Industry",
+  "Refrigerant",
+  "Surfactant",
 ];
 
 const countColor = (count) => {
   if (count >= 100) return "#10385e";
-  if (count >= 20) return "#138808";
-  if (count >= 5) return "#c8972a";
+  if (count >= 20)  return "#138808";
+  if (count >= 5)   return "#c8972a";
   return "#718096";
 };
 
@@ -58,6 +49,31 @@ export default function CategorySearch() {
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [liveCounts, setLiveCounts] = useState({}); // { clean_category -> count }
+
+  // Fetch live category counts from backend on mount
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/api/analytics/category-counts`)
+      .then((res) => {
+        const cats = res.data.categories || [];
+        const map = {};
+        cats.forEach(({ category, count }) => {
+          map[category] = parseInt(count, 10);
+        });
+        setLiveCounts(map);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Build display list with live counts merged in
+  const CATEGORIES = CATEGORIES_LIST.map((catName) => {
+    return {
+      label: catName,
+      keyword: catName,
+      count: liveCounts[catName] || 0
+    };
+  });
+
 
   const filtered = CATEGORIES.filter((c) =>
     c.label.toLowerCase().includes(search.toLowerCase())
@@ -158,7 +174,7 @@ export default function CategorySearch() {
                   <button
                     key={label}
                     onClick={() => toggle(label)}
-                    title={`${count} entries`}
+                    title={`${count} compounds`}
                     className="rounded-full border px-3 py-2 text-sm transition"
                     style={{
                       borderColor: active ? "#10385e" : "#d6dfe7",
@@ -176,7 +192,7 @@ export default function CategorySearch() {
                         color: active ? "rgba(255,255,255,0.85)" : countColor(count),
                       }}
                     >
-                      {count}
+                      {count > 0 ? count : "—"}
                     </span>
                   </button>
                 );

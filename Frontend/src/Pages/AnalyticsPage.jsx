@@ -179,6 +179,7 @@ export default function AnalyticsPage() {
                 {activeTab === "heatmap" && <Heatmap data={data} />}
                 {activeTab === "chromatogram" && <Chromatogram data={data} />}
                 {activeTab === "massSpectrum" && <MassSpectrum data={data} />}
+
               </>
             ) : (
               <div className="info-placeholder">

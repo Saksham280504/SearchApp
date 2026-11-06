@@ -1,4 +1,9 @@
 node_modules/
 filtered/
 .env
+.env.*
 *.log
+uploads/reports/*.pdf
+uploads/originals/*
+uploads/temp/*
+update_stations.js

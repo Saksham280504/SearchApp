@@ -231,7 +231,7 @@ export default function Home() {
             }}
           >
             Real-time search, sorting and visualisation of mass-spectrometry data
-            across sample files — powered by compound and category-based
+            across sample files - powered by compound and category-based
             indexing with interactive analytics.
           </p>
 

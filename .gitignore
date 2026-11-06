@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+Backend/filtered/
+
+# Environment variables
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Logs
+*.log
+**/*.log
+
+# Runtime uploads & generated PDFs
+Backend/uploads/reports/*.pdf
+Backend/uploads/originals/*
+Backend/uploads/temp/*
+
+# Temporary scratch & internal planning files
+scratch_*.js
+plan.md
+application_documentation.md
+Backend/update_stations.js
+

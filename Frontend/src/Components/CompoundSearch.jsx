@@ -11,78 +11,55 @@ import {
 } from "recharts";
 import {
   fetchSearchResults,
-  fetchAutocompleteResults,
   clearSearchResults,
   saveCurrentSearch,
   clearSavedSearches,
 } from "../../redux/searchSlice";
+import CompoundAutocomplete from "./CompoundAutocomplete";
 
 function CompoundSearch() {
   const dispatch = useDispatch();
 
   const {
-    fileNames,
+    results,
     downloadLink,
     error,
-    suggestions,
-    mzValues,
-    retentionTimes,
-    molecularWeights,
-    ChemicalFormulas,
-    ms2Values,
-    ReferenceIons,
-    areas,
     compound,
     savedSearches,
+    loading,
   } = useSelector((state) => state.search);
 
   const [keyword, setKeyword] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [topN, setTopN] = useState(null);
   const [showBarGraph, setShowBarGraph] = useState(false);
-
-  useEffect(() => {
-    if (keyword.length > 2) {
-      dispatch(fetchAutocompleteResults(keyword));
-    }
-  }, [keyword, dispatch]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!keyword) return alert("Enter a search keyword");
-    setShowSuggestions(false);
     dispatch(clearSearchResults());
     dispatch(fetchSearchResults({ keyword, searchType: "compound" }));
     setTopN(null);
     setShowBarGraph(false);
   };
 
-  const combinedResults = fileNames
-    .map((file, index) => ({
-      fileName: file,
-      mzValue: mzValues[index],
-      retentionTime: retentionTimes[index],
-      molecularWeight: molecularWeights[index],
-      chemicalFormula: ChemicalFormulas[index],
-      ms2Value: ms2Values[index],
-      referenceIon: ReferenceIons[index],
-      area: areas[index],
-    }))
-    .sort((a, b) => parseFloat(b.area) - parseFloat(a.area));
+  // Sort by area descending
+  const sortedResults = [...results].sort(
+    (a, b) => parseFloat(b.area) - parseFloat(a.area)
+  );
 
   const filteredResults =
-    topN && combinedResults.length > topN
-      ? combinedResults.slice(0, topN)
-      : combinedResults;
+    topN && sortedResults.length > topN
+      ? sortedResults.slice(0, topN)
+      : sortedResults;
 
-  const currentGraphData = combinedResults
-    .slice(0, Math.min(10, combinedResults.length))
+  const currentGraphData = sortedResults
+    .slice(0, Math.min(10, sortedResults.length))
     .map((result) => ({
       name: result.fileName.split("_ALL")[0],
       area: parseFloat(result.area),
     }));
 
-  const hasResults = fileNames.length > 0 || savedSearches.length > 0;
+  const hasResults = results.length > 0 || savedSearches.length > 0;
 
   const handleSaveCurrentSearch = () => {
     if (compound && currentGraphData.length > 0) {
@@ -123,43 +100,28 @@ function CompoundSearch() {
 
         <form onSubmit={handleSearch} className="rounded-2xl bg-white/90 p-5 shadow-lg">
           <div className="relative mb-4">
-            <input
-              type="text"
-              placeholder="Enter compound name"
+            <CompoundAutocomplete
               value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setShowSuggestions(e.target.value.length > 2);
+              onChange={setKeyword}
+              onSelect={(val) => {
+                setKeyword(val);
+                // Optionally auto-submit: 
+                // dispatch(fetchSearchResults({ keyword: val, searchType: "compound" }));
               }}
-              required
-              autoComplete="off"
-              className="w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-slate-700 outline-none transition focus:border-[#0a6a8b] focus:ring-2 focus:ring-[#0a6a8b]/20"
+              placeholder="Enter compound name"
+              inputStyle={{
+                padding: "12px 14px", // slightly larger for this specific form
+                borderColor: "#cbd5e1"
+              }}
             />
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="mt-2 w-full max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-md relative z-10">
-                <ul className="w-full">
-                  {suggestions.map((suggestion, index) => (
-                    <li
-                      key={index}
-                      className="cursor-pointer p-3 text-sm text-slate-700 hover:bg-slate-100"
-                      onClick={() => {
-                        setKeyword(suggestion);
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-gradient-to-r from-[#10385e] to-[#0a6a8b] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_24px_rgba(16,56,94,0.18)] transition hover:-translate-y-0.5"
+            disabled={loading}
+            className="w-full rounded-xl bg-gradient-to-r from-[#10385e] to-[#0a6a8b] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_24px_rgba(16,56,94,0.18)] transition hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Search Compound
+            {loading ? "Searching…" : "Search Compound"}
           </button>
         </form>
 
@@ -178,25 +140,31 @@ function CompoundSearch() {
             "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,250,252,0.92))",
         }}
       >
-        {!hasResults && (
+        {!hasResults && !loading && (
           <div className="info-placeholder">
             Search for a compound on the left to view files, properties, and comparison
             charts here.
           </div>
         )}
 
-        {fileNames.length > 0 && (
+        {loading && (
+          <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
+            Searching across all sample files…
+          </div>
+        )}
+
+        {results.length > 0 && (
           <div className="rounded-[24px] border border-slate-200 bg-white/90 p-5 shadow-sm">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-2xl font-bold text-slate-800">Matching Results</h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Files and compound properties ranked by area.
+                  {results.length} observation{results.length !== 1 ? "s" : ""} found · sorted by area (high → low)
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {combinedResults.length > 10 && (
+                {sortedResults.length > 10 && (
                   <button
                     className={`rounded-full px-3 py-1 text-sm ${
                       topN === 10
@@ -208,7 +176,7 @@ function CompoundSearch() {
                     Top 10
                   </button>
                 )}
-                {combinedResults.length > 20 && (
+                {sortedResults.length > 20 && (
                   <button
                     className={`rounded-full px-3 py-1 text-sm ${
                       topN === 20
@@ -220,7 +188,7 @@ function CompoundSearch() {
                     Top 20
                   </button>
                 )}
-                {combinedResults.length > 30 && (
+                {sortedResults.length > 30 && (
                   <button
                     className={`rounded-full px-3 py-1 text-sm ${
                       topN === 50
@@ -246,26 +214,31 @@ function CompoundSearch() {
             <div className="overflow-x-auto">
               <div className="min-w-[1100px]">
                 <div className="grid grid-cols-8 gap-4 rounded-t-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700">
-                  <div>File Names</div>
-                  <div>m/z Values</div>
-                  <div>Retention Times</div>
-                  <div>Molecular Weights</div>
-                  <div>Chemical Formulas</div>
-                  <div>MS2 Values</div>
-                  <div>Reference Ions</div>
-                  <div>Areas</div>
+                  <div>File</div>
+                  <div>m/z</div>
+                  <div>RT (min)</div>
+                  <div>Mol. Weight</div>
+                  <div>Formula</div>
+                  <div>MS2</div>
+                  <div>Ref. Ion</div>
+                  <div>Area (Max.)</div>
                 </div>
                 <div className="divide-y divide-slate-100 border-x border-b border-slate-100 rounded-b-2xl">
                   {filteredResults.map((result, index) => (
-                    <div key={index} className="grid grid-cols-8 gap-4 px-4 py-3 text-sm text-slate-700">
-                      <div>{result.fileName.split("_ALL")[0]}</div>
+                    <div
+                      key={index}
+                      className="grid grid-cols-8 gap-4 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    >
+                      <div className="font-medium truncate" title={result.fileName}>
+                        {result.fileName.split("_ALL")[0]}
+                      </div>
                       <div>{result.mzValue}</div>
                       <div>{result.retentionTime}</div>
                       <div>{result.molecularWeight}</div>
                       <div>{result.chemicalFormula}</div>
-                      <div>{result.ms2Value}</div>
+                      <div className="truncate" title={result.ms2Value}>{result.ms2Value}</div>
                       <div>{result.referenceIon}</div>
-                      <div>{result.area}</div>
+                      <div className="font-semibold">{result.area}</div>
                     </div>
                   ))}
                 </div>
@@ -288,20 +261,20 @@ function CompoundSearch() {
                 className="rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
                 onClick={handleSaveCurrentSearch}
               >
-                Save Current Search Data for Comparison
+                Save for Comparison
               </button>
               <button
                 className="rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
                 onClick={() => setShowBarGraph((prev) => !prev)}
               >
-                {showBarGraph ? "Hide Current Bar Graph" : "Show Current Bar Graph"}
+                {showBarGraph ? "Hide Bar Graph" : "Show Bar Graph"}
               </button>
             </div>
 
             {showBarGraph && (
               <div className="rounded-[24px] border border-slate-200 bg-white/90 p-5 shadow-sm">
                 <h3 className="mb-4 text-xl font-semibold text-slate-800">
-                  Current Search Bar Graph for <span className="text-[#0a6a8b]">{compound}</span>
+                  Top 10 Areas — <span className="text-[#0a6a8b]">{compound}</span>
                 </h3>
                 <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
@@ -319,7 +292,14 @@ function CompoundSearch() {
                       />
                       <YAxis
                         width={90}
-                        label={{ value: "Area", angle: -90, position: "insideLeft", offset: 0, dx: -20, fill: "#666" }}
+                        label={{
+                          value: "Area",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          dx: -20,
+                          fill: "#666",
+                        }}
                       />
                       <Tooltip />
                       <Bar dataKey="area" fill="#0a6a8b" />
@@ -349,7 +329,7 @@ function CompoundSearch() {
                 className="mb-6 rounded-2xl border border-slate-200 bg-slate-50/90 p-4 last:mb-0"
               >
                 <h3 className="mb-4 text-xl font-semibold text-slate-800">
-                  Saved Bar Graph for <span className="text-green-700">{savedSearch.compound}</span>
+                  Saved — <span className="text-green-700">{savedSearch.compound}</span>
                 </h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
@@ -368,7 +348,14 @@ function CompoundSearch() {
                       />
                       <YAxis
                         width={90}
-                        label={{ value: "Area", angle: -90, position: "insideLeft", offset: 0, dx: -20, fill: "#666" }}
+                        label={{
+                          value: "Area",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: 0,
+                          dx: -20,
+                          fill: "#666",
+                        }}
                       />
                       <Tooltip />
                       <Bar dataKey="area" fill="#4a9f73" />

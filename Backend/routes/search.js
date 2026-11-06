@@ -1,58 +1,67 @@
 // routes/search.js
-const { readExcel } = require("../utils/excelFileReader");
+// File-scan fallback for when DATABASE_URL is not configured.
+// Returns a unified object so server.js doesn't need a second scan pass.
+
 const { TextToJSON, clearCache } = require("../utils/TextToJson");
 const { filterByCategory, filterByCompoundName } = require("../utils/searchLogic");
 const { CreateExcelFile } = require("../utils/CreateExcelFile");
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
+/**
+ * searchRequest(keyword, searchType)
+ *
+ * For "category": returns { Count, CompoundNames, CompoundFormulas } or null.
+ *
+ * For "compound": returns {
+ *   filePath: string | null,        -- absolute path to the generated Excel file
+ *   displayData: {                  -- ready to spread into the HTTP response
+ *     fileNames, mzValues, retentionTimes, molecularWeights,
+ *     ChemicalFormulas, ms2Values, ReferenceIons, areas
+ *   }
+ * } or null if nothing found.
+ */
 const searchRequest = (keyword, searchType) => {
   // Clear cache at the beginning of each search to prevent Heap OOM
   clearCache();
 
-  let CompoundSearchResults = [];
-  let CategorySearchResults = {};
-
+  // ── Category search ───────────────────────────────────────────────
   if (searchType === "category") {
     const DATA_DIR = path.join(__dirname, "../data");
     const optimizedPath = path.join(DATA_DIR, "OptimizedCategoryData.json");
 
     if (!fs.existsSync(optimizedPath)) {
+      const { readExcel } = require("../utils/excelFileReader");
       const xlsxPath = path.join(DATA_DIR, "ExploSpreadsheet.xlsx");
       if (!fs.existsSync(xlsxPath)) return null;
 
       const excelData = readExcel(xlsxPath);
-      const optimized = excelData.map(row => ({
+      const optimized = excelData.map((row) => ({
         Category: row["Category"] || "",
         Name: row["Name"] || "",
-        Formula: row["Formula"] || ""
+        Formula: row["Formula"] || "",
       }));
       fs.writeFileSync(optimizedPath, JSON.stringify(optimized));
     }
 
     const data = TextToJSON(optimizedPath);
+    const { getVariations } = require("../utils/categoryMapper");
+    const variations = getVariations(keyword).map(v => v.toLowerCase());
 
-    // ── Case-insensitive substring match on the Category field ──────────
-    // This covers all spelling variants in the data (e.g. "Metabolite",
-    // "Metabolites", "mETABOLITE") as long as the keyword substring matches.
-    const keywordLower = keyword.toLowerCase().trim();
-
-    const matchedRows = data.filter(row => {
+    const matchedRows = data.filter((row) => {
       const cat = (row["Category"] || "").toLowerCase().trim();
-      return cat.includes(keywordLower);
+      return variations.includes(cat);
     });
 
     if (matchedRows.length === 0) return null;
 
-    // Build the same shape filterByCategory returns
     const names = [];
     const formulas = [];
     const seen = new Set();
 
-    matchedRows.forEach(row => {
+    matchedRows.forEach((row) => {
       const name = (row["Name"] || "").trim();
       const formula = (row["Formula"] || "").trim();
-      // Deduplicate by name+formula
       const key = `${name}||${formula}`;
       if (!seen.has(key)) {
         seen.add(key);
@@ -61,33 +70,77 @@ const searchRequest = (keyword, searchType) => {
       }
     });
 
-    CategorySearchResults = {
-      Count: names.length,
-      CompoundNames: names,
-      CompoundFormulas: formulas,
-    };
-
-    if (CategorySearchResults.Count > 0) {
-      return CategorySearchResults;
-    }
-    return null;
+    if (names.length === 0) return null;
+    return { Count: names.length, CompoundNames: names, CompoundFormulas: formulas };
   }
 
-  else if (searchType === "compound") {
+  // ── Compound search — single pass builds BOTH the Excel export AND display data ──
+  if (searchType === "compound") {
     const DATA_DIR = path.join(__dirname, "../data/sample-files");
-    const files = fs.readdirSync(DATA_DIR).filter(file => file.endsWith(".txt"));
-    files.forEach(file => {
+    const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith(".txt"));
+
+    // Accumulate export rows (for Excel) and display rows (for HTTP response)
+    const exportRows = [];
+    const fileNames = [];
+    const mzValues = [];
+    const retentionTimes = [];
+    const molecularWeights = [];
+    const ChemicalFormulas = [];
+    const ms2Values = [];
+    const ReferenceIons = [];
+    const areas = [];
+
+    files.forEach((file) => {
       const filePath = path.join(DATA_DIR, file);
       const data = TextToJSON(filePath);
       const results = filterByCompoundName(data, keyword);
-      CompoundSearchResults = CompoundSearchResults.concat(results);
+
+      results.forEach((row) => {
+        // For Excel export
+        exportRows.push({
+          File: file,
+          Name: row["Name"] || "",
+          Formula: row["Formula"] || "",
+          "m/z": row["m/z"],
+          "RT [min]": row["RT [min]"],
+          "Calc. MW": row["Calc. MW"],
+          MS2: row["MS2"] || "",
+          "Reference Ion": row["Reference Ion"] || "",
+          "Area (Max.)": row["Area (Max.)"],
+        });
+
+        // For display data
+        fileNames.push(file);
+        mzValues.push(row["m/z"]);
+        retentionTimes.push(row["RT [min]"]);
+        molecularWeights.push(row["Calc. MW"]);
+        ChemicalFormulas.push(row["Formula"] || "");
+        ms2Values.push(row["MS2"] || "");
+        ReferenceIons.push(row["Reference Ion"] || "");
+        areas.push(row["Area (Max.)"]);
+      });
     });
-    if (CompoundSearchResults.length > 0) {
-      const outputFilePath = CreateExcelFile(CompoundSearchResults);
-      return outputFilePath;
-    }
-    return null;
+
+    if (exportRows.length === 0) return null;
+
+    const outputFilePath = CreateExcelFile(exportRows);
+
+    return {
+      filePath: outputFilePath,
+      displayData: {
+        fileNames,
+        mzValues,
+        retentionTimes,
+        molecularWeights,
+        ChemicalFormulas,
+        ms2Values,
+        ReferenceIons,
+        areas,
+      },
+    };
   }
+
+  return null;
 };
 
 module.exports = { searchRequest };

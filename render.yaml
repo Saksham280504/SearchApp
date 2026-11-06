@@ -1,3 +1,13 @@
+databases:
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database (Render managed)
+  # --------------------------------------------------------------------------
+  - name: search-app-db
+    plan: free
+    databaseName: searchapp
+    user: searchapp_user
+    region: oregon
+
 services:
   # --------------------------------------------------------------------------
   # 1. Backend Service (Node.js Express)
@@ -6,15 +16,25 @@ services:
     name: search-app-backend
     env: node
     plan: free
-    region: oregon # Change to your preferred region (e.g., frankfurt, singapore)
+    region: oregon
     rootDir: Backend
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: npm run db:setup && node server.js
     envVars:
       - key: PORT
         value: 5000
       - key: NODE_ENV
         value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: search-app-db
+          property: connectionString
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://search-app-frontend-iigq.onrender.com
 
   # --------------------------------------------------------------------------
   # 2. Frontend Service (Static Site)

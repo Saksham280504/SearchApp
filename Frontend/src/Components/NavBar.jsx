@@ -1,21 +1,44 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/authSlice";
 import jalShaktiLogo from "../assets/logos/jal-shakti.svg";
 import denmarkLogo from "../assets/logos/denmark.png";
 import slcrLogo from "../assets/logos/slcr.webp";
 import namamiGangeLogo from "../assets/logos/namami-gange.gif";
 
-const NAV_LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/about", label: "About" },
-  { to: "/query", label: "Query" },
-  { to: "/analytics", label: "Analytics" },
-  { to: "/contact", label: "Contact" },
+const BASE_NAV_LINKS = [
+  { to: "/",         label: "Home" },
+  { to: "/about",    label: "About" },
+  { to: "/query",    label: "Query" },
+  { to: "/analytics",label: "Analytics" },
+  { to: "/map",      label: "Map" },
+  { to: "/reports",  label: "Reports" },
+  { to: "/contact",  label: "Contact" },
 ];
 
 export default function Navbar() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Build nav links — Upload is shown only to researcher + admin
+  const NAV_LINKS = [
+    ...BASE_NAV_LINKS,
+    ...(user && ["researcher", "admin"].includes(user.role)
+      ? [{ to: "/upload", label: "Upload" }]
+      : []),
+    ...(user && user.role === "admin"
+      ? [{ to: "/admin", label: "Admin Panel" }]
+      : []),
+  ];
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login", { replace: true });
+  };
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -180,6 +203,41 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
+            {/* User badge + logout */}
+            {user && (
+              <>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "8px 14px", borderRadius: 999,
+                  background: "rgba(200,151,42,0.08)",
+                  border: "1px solid rgba(200,151,42,0.3)",
+                  fontSize: 13, color: "#8a6218", fontWeight: 600,
+                }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+                    letterSpacing: "0.5px", background: "#C8972A", color: "#fff",
+                    padding: "2px 6px", borderRadius: 6,
+                  }}>
+                    {user.role}
+                  </span>
+                  {user.name}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    padding: "11px 18px", borderRadius: 999, border: "1px solid rgba(220,38,38,0.25)",
+                    background: "rgba(254,242,242,0.9)", color: "#dc2626",
+                    fontSize: 14, fontWeight: 700, cursor: "pointer",
+                    transition: "transform 0.2s",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+                >
+                  Sign Out
+                </button>
+              </>
+            )}
           </div>
         </div>
 
